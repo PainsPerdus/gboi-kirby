@@ -1,13 +1,15 @@
-= Hello World!
-Tony
-:page-category: setup
-:page-tags: [assembly, setup]
-:page-layout: post
-:revdate: 2020-06-19 20:55:00 +0200
+---
+title: "Hello world!"
+author: Tony
+category: setup
+tags: [assembly, setup]
+layout: post
+date: 2020-06-19 20:55:00 +0200
+---
 
 I hereby declare that this devlog is open! What is this devlog about? We, the team Kirby, are going to make a _The binding of Isaac_-inspired game for the Gameboy and we will talk about our ideas, plans, difficulties and progress here.
 
-== Today
+## Today
 
 Here's a quick recap of what happened:
 
@@ -15,7 +17,7 @@ Here's a quick recap of what happened:
 * Crash course in gameboy assembly language
 * Practice
 
-=== Install party
+### Install party
 
 Basically, we ensured everybody is able to assemble assembly programs and run it on a gameboy emulator (vba-m or BGB)
 
@@ -23,7 +25,7 @@ Basically, we ensured everybody is able to assemble assembly programs and run it
 * Setup the assembly toolchain
 * Setup a gameboy emulator (vba-m, bgb)
 
-=== Github
+### Github
 
 We properly set the git repositories up: 
 
@@ -33,7 +35,7 @@ We properly set the git repositories up:
 
 We intend to use as many available features as we can (pull requests, code reviews, releases, github pages, etc.)
 
-=== Gameboy assembly language
+### Gameboy assembly language
 
 Basically, we used this repository: https://github.com/PainsPerdus/gb_training
 
@@ -43,11 +45,11 @@ Even though this language is not complex per se, we still struggled because of s
 * spaces _are_ important : labels are written `label:` and _not_ `labels :`
 
 
-== Which kind of game are wo going to make?
+## Which kind of game are wo going to make?
 
 Whilst the other team plans to make an accurate reproduction of _The Binding of Isaac_ (and adapt the twin stick shooter gameplay to the gameboy), we intend to keep the _spirit_ of the game (a roguelike + some features) and make our own game.
 
-== Coming up next
+## Coming up next
 
 During the week-end:
 
@@ -59,7 +61,7 @@ Monday, we planned to do the following:
 * define the calling conventions
 * define the gameplay
 
-== Random thoughts
+## Random thoughts
 
 * a crash course in debugging using vba-m or bgb would be nice
 * we should consider pair programming
