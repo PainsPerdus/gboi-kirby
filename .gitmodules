@@ -1,0 +1,4 @@
+[submodule "GBDefs"]
+	path = GBDefs
+	url = git@github.com:PainsPerdus/GBDefs.git
+	branch = master
