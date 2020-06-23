@@ -1,6 +1,6 @@
 ---
 title: "Hello world!"
-author: Tony
+author: ChatPion
 category: setup
 tags: [assembly, setup]
 layout: post
