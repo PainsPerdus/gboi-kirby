@@ -1,6 +1,4 @@
-;Source tuto pong 0.1
-;Gameboy DMG WLA-DX
-;CC furrtek.org 2011
+;on veut faire déplacer une bille sauf que cette fois elle a une taille de 16*16
 
 .ROMDMG                         ;Pas de features CGB
 .NAME "PONGDEMO"                ;Nom du ROM inscrit dans le header
@@ -91,11 +89,43 @@ clspr:
   xor    a
   ldh    ($42),a                ;Scroll Y
   ldh    ($43),a                ;Scroll X
+  
 
+  ;tile haut gauche
   ld     hl,$FE00
-  ld     (hl),$80               ;OAM balle Y
+  ld     (hl),$80               ;OAM  Y
   inc    l
-  ld     (hl),$80               ;OAM balle X
+  ld     (hl),$80               ;OAM  X
+  inc    l
+  ld     (hl),$02               ;OAM balle tile
+  inc    l
+  ld     (hl),0                 ;OAM balle attribut
+  
+  ;tile haut droite
+  ld     hl,$FE04
+  ld     (hl),$88               ;OAM  Y
+  inc    l
+  ld     (hl),$80               ;OAM  X
+  inc    l
+  ld     (hl),$02               ;OAM balle tile
+  inc    l
+  ld     (hl),0                 ;OAM balle attribut
+  
+  ;tile bas gauche
+  ld     hl,$FE08
+  ld     (hl),$80               ;OAM  Y
+  inc    l
+  ld     (hl),$88               ;OAM  X
+  inc    l
+  ld     (hl),$02               ;OAM balle tile
+  inc    l
+  ld     (hl),0                 ;OAM balle attribut
+  
+  ; tile bas droite
+  ld     hl,$FE0C
+  ld     (hl),$88               ;OAM  Y
+  inc    l
+  ld     (hl),$88               ;OAM  X
   inc    l
   ld     (hl),$02               ;OAM balle tile
   inc    l
@@ -169,10 +199,10 @@ VBlank:
   ld     a,(hl)
 
 
-  cp     160 +1                 ;BalleX < 160: pas de collision mur droit     ; le +1 c'est pour ne pas avoir le bruit en permanence quand la balle est contre le mur
+  cp     155     ;160+1-8           ;BalleX < 160: pas de collision mur droit     ; le +1 c'est pour ne pas avoir le bruit en permanence quand la balle est contre le mur
   jr     c,nocxr
   call   lowbeep
-  ld     a,160                  ;Limite à 160
+  ld     a,154                  ;Limite à 160 -8
 nocxr:
 
   cp     8
@@ -187,10 +217,10 @@ nocxl:
   ld     hl,BalleY
   ld     a,(hl)
 
-  cp     144+8+1                ; le +1 c'est pour ne pas avoir en permanence le bruit quand la balle est en bas, on veut le bruit que quand la balle est en bas et qu'on appuie sur la fleche du bas
+  cp     144+1                ; le +1 c'est pour ne pas avoir en permanence le bruit quand la balle est en bas, on veut le bruit que quand la balle est en bas et qu'on appuie sur la fleche du bas
   jr     c,nocyr                ;Collision bas
   call   lowbeep
-  ld     a,144+8                ;Limite
+  ld     a,144                ;Limite
 nocyr:
   cp     8+8
   jr     nc,nocyl               ;Collision haut
@@ -199,11 +229,42 @@ nocyr:
 nocyl:
   ld     (hl),a
 
+  ;haut gauche
   ld     hl,$FE00
   ld     a,(BalleY)
   ld     (hl),a                 ;OAM balle Y
   inc    l
   ld     a,(BalleX)
+  ld     (hl),a                 ;OAM balle X
+  
+  ;bas droit
+  ld     hl,$FE04
+  ld     a,(BalleY)
+  add    8
+  ld     (hl),a                 ;OAM balle Y
+  inc    l
+  ld     a,(BalleX)
+  add    8
+  ld     (hl),a                 ;OAM balle X
+  
+  ;bas gauche
+  ld     hl,$FE08
+  ld     a,(BalleY)
+  add    0
+  ld     (hl),a                 ;OAM balle Y
+  inc    l
+  ld     a,(BalleX)
+  add    8
+  ld     (hl),a                 ;OAM balle X
+  
+  ;bas droit
+  ld     hl,$FE0C
+  ld     a,(BalleY)
+  add    8
+  ld     (hl),a                 ;OAM balle Y
+  inc    l
+  ld     a,(BalleX)
+  add    0
   ld     (hl),a                 ;OAM balle X
 
   pop    hl
