@@ -1,6 +1,6 @@
 ---
 title: "Setting up Jekyll with Github Pages!"
-author: Tony
+author: ChatPion
 category: setup
 tags: [jekyll, setup]
 layout: post
