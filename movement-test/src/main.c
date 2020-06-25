@@ -69,6 +69,8 @@ void main(void) {
     UINT8 frame_skip = 8;  // Update player's animation every 8 frame to
                            // slow down the animation (8 frames = ~133 ms
                            // between each animation frames)
+    UINT8 dx = 0;
+    UINT8 dy = 0;
 
     // Initialize player's state
     player_x = 80;
@@ -97,32 +99,34 @@ void main(void) {
         // Wait for v-blank (screen refresh)
         wait_vbl_done();
 
+        dx = 0;
+        dy = 0;
+
         // Read joypad keys to know if the player is walking
         // and in which direction
         keys = joypad();
         if (keys & J_UP) {
             player_direction = PLAYER_DIRECTION_UP;
-            is_player_walking = 1;
-        } else if (keys & J_DOWN) {
+            dy -= 1;
+        } if (keys & J_DOWN) {
             player_direction = PLAYER_DIRECTION_DOWN;
-            is_player_walking = 1;
-        } else if (keys & J_LEFT) {
+            dy += 1;
+        } if (keys & J_LEFT) {
             player_direction = PLAYER_DIRECTION_LEFT;
-            is_player_walking = 1;
-        } else if (keys & J_RIGHT) {
+            dx -= 1;
+        } if (keys & J_RIGHT) {
             player_direction = PLAYER_DIRECTION_RIGHT;
-            is_player_walking = 1;
-        } else {
-            is_player_walking = 0;
-            frame_skip = 1;  // Force refresh of the animation frame
+            dx += 1;
         }
+
+       is_player_walking = (dx != 0 || dy != 0);
 
         // Update the player position if it is walking
         if (is_player_walking) {
-            if (player_direction == PLAYER_DIRECTION_RIGHT) player_x += 1;
-            else if (player_direction == PLAYER_DIRECTION_LEFT) player_x -= 1;
-            else if (player_direction == PLAYER_DIRECTION_UP) player_y -= 1;
-            else if (player_direction == PLAYER_DIRECTION_DOWN) player_y += 1;
+
+            player_x += dx;
+            player_y += dy;
+
             move_sprite(PLAYER_SPRITE_ID, player_x, player_y);
 
             // We do not update the animation on each frame: the animation
