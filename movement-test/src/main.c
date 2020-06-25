@@ -1,5 +1,5 @@
 #include <gb/gb.h>
-
+#include <stdio.h>
 #include "player.sprites.h"
 
 #define PLAYER_SPRITE_ID 0
@@ -17,7 +17,9 @@ UINT8 PLAYER_SPRITE_ANIM[] = {
 #define PLAYER_DIRECTION_DOWN  0
 #define PLAYER_DIRECTION_UP    9
 #define PLAYER_DIRECTION_RIGHT 18
+#define PLAYER_DIRECTION_RIGHT_DOWN 19  //The diagonal movement has the same animation as the horizontal movement
 #define PLAYER_DIRECTION_LEFT  27
+
 
 // Variables containing player state
 UINT8 player_x;
@@ -77,6 +79,9 @@ void main(void) {
     player_animation_frame = 0;
     is_player_walking = 0;
 
+    UINT8 dx = 0;
+    UINT8 dy = 0;
+
     // Load sprites' tiles in video memory
     set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
 
@@ -97,21 +102,24 @@ void main(void) {
         // Wait for v-blank (screen refresh)
         wait_vbl_done();
 
+        dx = 0;
+        dy = 0;
         // Read joypad keys to know if the player is walking
         // and in which direction
+        is_player_walking = 1;
         keys = joypad();
         if (keys & J_UP) {
             player_direction = PLAYER_DIRECTION_UP;
-            is_player_walking = 1;
+            dy -= 1;
         } else if (keys & J_DOWN) {
             player_direction = PLAYER_DIRECTION_DOWN;
-            is_player_walking = 1;
+            dy += 1;
         } else if (keys & J_LEFT) {
             player_direction = PLAYER_DIRECTION_LEFT;
-            is_player_walking = 1;
-        } else if (keys & J_RIGHT) {
+            dx -= 1;
+        } else if (keys & J_RIGHT ) {
             player_direction = PLAYER_DIRECTION_RIGHT;
-            is_player_walking = 1;
+            dx += 1;    
         } else {
             is_player_walking = 0;
             frame_skip = 1;  // Force refresh of the animation frame
@@ -119,10 +127,8 @@ void main(void) {
 
         // Update the player position if it is walking
         if (is_player_walking) {
-            if (player_direction == PLAYER_DIRECTION_RIGHT) player_x += 1;
-            else if (player_direction == PLAYER_DIRECTION_LEFT) player_x -= 1;
-            else if (player_direction == PLAYER_DIRECTION_UP) player_y -= 1;
-            else if (player_direction == PLAYER_DIRECTION_DOWN) player_y += 1;
+            player_x += dx;
+            player_y += dy;
             move_sprite(PLAYER_SPRITE_ID, player_x, player_y);
 
             // We do not update the animation on each frame: the animation
