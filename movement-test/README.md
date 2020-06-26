@@ -1,3 +1,3 @@
-Please build the `gdbk-n` support library before trying to compile this.
+Please build the `gdbk-2020` support library before trying to compile this.
 
-You must `make assets` at least once. See the Makefile for details.
+You must `make assets` and `make chunks` at least once. See the Makefile for details.
