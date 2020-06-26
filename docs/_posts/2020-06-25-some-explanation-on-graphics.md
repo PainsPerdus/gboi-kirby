@@ -2,7 +2,7 @@
 title: "Some explanations on graphics"
 author: Ametheek
 category: graphics
-tags: [graphics]
+tags: [graphics, test]
 layout: post
 date: 2020-06-25 09:32:09 +0200
 ---
@@ -10,6 +10,7 @@ date: 2020-06-25 09:32:09 +0200
 Even though our project is based on _The Binding of Isaac_, we decided to create
 our own visual identity, with an original main character.
 
+?
 
 ## First steps
 
@@ -33,7 +34,7 @@ right, so we chose to go with an 8x16 sprite.
 
 After some trial and error, we created **Piney**:
 
-<img src="/gboi-kirby/assets/img/latwalk1.gif" width="150"  /> 
+<img src="/gboi-kirby/assets/img/latwalk1.gif" width="150"  />
 <img src="/gboi-kirby/assets/img/downwalk1.gif" width="150"  />
 
 
@@ -43,7 +44,7 @@ Piney is a pineapple. Piney is cute. Piney will murder anyone without remorse.
 
 At that point, we had the cuteness down. But we needed to show Piney's, uh,
 _peculiar_ tendencies in some way, and what better way to do that than through
-the gameplay? 
+the gameplay?
 More specifically, through its weapon and favorite way of killing. And because
 _Doom_ was a major inspiration, we easily agreed to give our little Piney an
 oversized  chainsaw.
@@ -71,7 +72,7 @@ implemented: the **Dash**, a super-fast move that should be high-risk,
 high-reward, and high-fun.
 
 It's supposed to be a major part of the gameplay, so I need to offer Piney a
-good dash animation in order for the player have a good gameplay experience. 
+good dash animation in order for the player have a good gameplay experience.
 
 
 ## Maps and general aestethics
