@@ -1,13 +1,12 @@
 # pod = Pineapple of Doom
 PROG = pod
 
-GBDK_N = ../gbdk-n
-CC = $(GBDK_N)/bin/gbdk-n-compile.sh
-LD = $(GBDK_N)/bin/gbdk-n-link.sh
-MR = $(GBDK_N)/bin/gbdk-n-make-rom.sh
+export SDCCDIR=/usr  # might not work for everyone
+GBDK_2020 = ../gbdk-2020/
+CC = $(GBDK_2020)/build/gbdk/bin/lcc -Wa-l -Wl-m -Wl-j
 IMG2GB = img2gb
 
-_OBJ = $(patsubst %.c,%.rel,$(wildcard src/*.c))
+_OBJ = $(patsubst %.c,%.o,$(wildcard src/*.c))
 
 
 all: build
@@ -15,10 +14,9 @@ all: build
 build: $(PROG).gb
 
 $(PROG).gb: $(_OBJ)
-	$(LD) -o $(PROG).ihx $^
-	$(MR) $(PROG).ihx $(PROG).gb
+	$(CC) -o $(PROG).gb $^
 
-%.rel: %.c
+%.o: %.c
 	$(CC) -o $@ -c $<
 
 assets:
@@ -30,9 +28,9 @@ assets:
 		--name PLAYER_SPRITES \
 		./piney.png
 
-.PHONY: gbdk-n
-gbdk-n:
-	cd $(GBDK_N) && make
+.PHONY: gbdk-2020
+gbdk-2020:
+	cd $(GBDK_2020) && make
 
 clean:
 	rm -rf src/*.rel
