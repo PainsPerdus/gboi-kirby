@@ -109,10 +109,17 @@ void main(void) {
         //if the player is dashing, he can't control his movement anymore 
         //after x iterations of the dash program, we set is_dashing to 0 and that ends the dash
         if (is_dashing) {
-            
-            if (compteur_dash == 16){           //we choose the length of the dash here
+            if (compteur_dash == 10){           //we choose the length of the dash here
                 is_dashing = 0;
-            }                                 
+            }    
+            if (compteur_dash == 4){
+                dx = dx + dx;
+                dy = dy + dy;
+            }  
+            if (compteur_dash == 8){
+                dx = dx + dx;
+                dy = dy + dy;
+            }                               
             player_x += dx;
             player_y += dy;
 
@@ -145,8 +152,8 @@ void main(void) {
             if(keys & J_SELECT){
                 is_dashing = 1;
                 compteur_dash = 0;
-                dx = dx + dx + dx;                  //we chose the speed of the dash here
-                dy = dy + dy + dy;
+                dx = dx + dx;                  //we chose the speed of the dash here
+                dy = dy + dy;
             }
             
 
