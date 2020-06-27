@@ -119,6 +119,22 @@ void main(void) {
             dx += 1;
         }
 
+        //implementation of the dash  
+        //the caracter moves faster and is blocked in one direction for a few moment  
+        if (keys & J_SELECT) {
+            dx = dx + dx + dx;                  //we chose the speed of the dash here
+            dy = dy + dy + dy;
+            UINT8 compteur = 0;
+            while (compteur< 22){              //we choose the length of the dash here
+                wait_vbl_done();                //we wait for another frame 
+                player_x += dx;
+                player_y += dy;
+
+                move_sprite(PLAYER_SPRITE_ID, player_x, player_y);      //actualisation of the sprite
+                compteur += 1;
+            }
+        }
+
        is_player_walking = (dx != 0 || dy != 0);
 
         // Update the player position if it is walking
