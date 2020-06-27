@@ -100,23 +100,34 @@ void main(void) {
     // https://gbdev.gg8.se/wiki/articles/GBDK_set_sprite_prop
     set_sprite_prop(PLAYER_SPRITE_ID, 0x00U);
 
-
+    UINT8 longueur_dash = 10;
+    UINT8 step1_dash = 4;
+    UINT8 step2_dash = 8;
     while (1) {
         // Wait for v-blank (screen refresh)
         wait_vbl_done();
+
 
         
         //if the player is dashing, he can't control his movement anymore 
         //after x iterations of the dash program, we set is_dashing to 0 and that ends the dash
         if (is_dashing) {
-            if (compteur_dash == 10){           //we choose the length of the dash here
+            longueur_dash = 10;
+            step1_dash = 4;
+            step2_dash = 8;
+            if (dx != 0 && dy != 0){                //le mouvement est alors diagonal, on réduit la durée du dash
+                longueur_dash = 7;
+                step1_dash = 3;
+                step2_dash = 5;
+            }
+            if (compteur_dash == longueur_dash){           //we choose the length of the dash here
                 is_dashing = 0;
             }    
-            if (compteur_dash == 4){
+            if (compteur_dash == step1_dash){
                 dx = dx + dx;
                 dy = dy + dy;
             }  
-            if (compteur_dash == 8){
+            if (compteur_dash == step2_dash){
                 dx = dx + dx;
                 dy = dy + dy;
             }                               
