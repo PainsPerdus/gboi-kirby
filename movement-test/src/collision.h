@@ -32,7 +32,7 @@ BOOLEAN rect_rect_collision(RECTANGLE* rect1, RECTANGLE* rect2);
 typedef struct {
     INT8 dx;
     INT8 dy;
-} COLLISION_DIFF;
+} VEC_DIFF;
 
 /**
  * @brief Compute the overlap between \p entity and \p obstacle
@@ -43,6 +43,6 @@ typedef struct {
  * @param obstacle 
  * @param diff diff + new_pos = collision free pos
  */
-void rect_rect_penetration(VEC* old_pos, VEC* new_pos, SIZE* size, RECTANGLE* obstacle, COLLISION_DIFF* diff);
+void rect_rect_penetration(VEC* old_pos, VEC* new_pos, SIZE* size, RECTANGLE* obstacle, VEC_DIFF* diff);
 
 #endif

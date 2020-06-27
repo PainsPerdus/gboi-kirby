@@ -29,11 +29,11 @@ UINT8 is_player_walking;
 #define SPRITE_OFFSET_X 8
 #define SPRITE_OFFSET_Y 8  // note: set at 8 even though sprites are 8px tall because of the perspective
 
-// Obstacles
-RECTANGLE LEFT_WALL = {{0, 0}, {24, 144}};
-RECTANGLE RIGHT_WALL = {{152, 0}, {8, 144}};
-RECTANGLE TOP_WALL = {{0, 0}, {160, 8}};
-RECTANGLE BOTTOM_WALL = {{0, 136}, {160, 8}};
+const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
+const UINT8 ROOM_HEIGHT = 16;
+
+INT8 scroll_x = 16;  // initial offset because of the UI
+INT8 scroll_y = 0;
 
 // Flip the given sprite on X axis.
 //
@@ -78,8 +78,8 @@ void main(void) {
     UINT8 frame_skip = 8;  // Update player's animation every 8 frame to
                            // slow down the animation (8 frames = ~133 ms
                            // between each animation frames)
-    UINT8 dx = 0;
-    UINT8 dy = 0;
+    INT8 dx = 0;
+    INT8 dy = 0;
 
     // Initialize player's state
     player.pos.x = 80;
@@ -142,15 +142,56 @@ void main(void) {
                 { player.size.w, player.size.h }
             };
 
-            if (!rect_rect_collision(&new_player, &LEFT_WALL)
-                && !rect_rect_collision(&new_player, &RIGHT_WALL)
-                && !rect_rect_collision(&new_player, &TOP_WALL)
-                && !rect_rect_collision(&new_player, &BOTTOM_WALL)) {
-                player.pos = new_player.pos;
+            VEC_DIFF current_diff = {0, 0};
+            VEC_DIFF total_diff = {dx, dy};
+
+            const INT8 MAX_MOVE_X = player.size.w - 1;
+            const INT8 MAX_MOVE_Y = player.size.h - 1;
+
+            
+            while (total_diff.dx != 0 || total_diff.dy != 0) {
+
+                // Split movement into submoves (to avoid going past obstacles)
+                if (total_diff.dx >= MAX_MOVE_X)
+                    current_diff.dx = MAX_MOVE_X;
+                else if (total_diff.dx <= -MAX_MOVE_X)
+                    current_diff.dx = -MAX_MOVE_X;
+                else
+                    current_diff.dx = total_diff.dx;
+                total_diff.dx -= current_diff.dx;
+
+                if (total_diff.dy >= MAX_MOVE_Y)
+                    current_diff.dy = MAX_MOVE_Y;
+                else if (total_diff.dy <= -MAX_MOVE_Y)
+                    current_diff.dy = -MAX_MOVE_Y;
+                else
+                    current_diff.dy = total_diff.dy;
+                total_diff.dy -= current_diff.dy;
+
+                new_player.pos.x = player.pos.x + current_diff.dx;
+                new_player.pos.y = player.pos.y + current_diff.dy;
+
+                if (new_player.pos.x < 8)
+                    new_player.pos.x = 8;
+                else if (new_player.pos.x + new_player.size.w > 8 + (ROOM_WIDTH << 3))
+                    new_player.pos.x = 8 - new_player.size.w + (ROOM_WIDTH << 3);
+                if (new_player.pos.y < 8)
+                    new_player.pos.y = 8;
+                else if (new_player.pos.y + new_player.size.h > 8 + (ROOM_HEIGHT << 3))
+                    new_player.pos.y = 8 - new_player.size.h + (ROOM_HEIGHT << 3);
+
+
+                /*if (!rect_rect_collision(&new_player, &LEFT_WALL)
+                    && !rect_rect_collision(&new_player, &RIGHT_WALL)
+                    && !rect_rect_collision(&new_player, &TOP_WALL)
+                    && !rect_rect_collision(&new_player, &BOTTOM_WALL)) */ {
+                    player.pos = new_player.pos;
+                }
+
             }
 
 
-            move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X, player.pos.y + SPRITE_OFFSET_Y);
+            move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
 
             // We do not update the animation on each frame: the animation
             // will be too quick. So we skip frames

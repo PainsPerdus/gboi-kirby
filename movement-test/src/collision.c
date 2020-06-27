@@ -9,7 +9,7 @@ BOOLEAN rect_rect_collision(RECTANGLE* rect1, RECTANGLE* rect2) {
     && rect1->size.h + rect1->pos.y > rect2->pos.y;
 }
 
-void rect_rect_penetration(VEC* old_pos, VEC* new_pos, SIZE* size, RECTANGLE* obstacle, COLLISION_DIFF* diff) {
+void rect_rect_penetration(VEC* old_pos, VEC* new_pos, SIZE* size, RECTANGLE* obstacle, VEC_DIFF* diff) {
     diff->dx = 0;
     diff->dy = 0;
     
