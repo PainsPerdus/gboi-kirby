@@ -2,11 +2,11 @@
 #include "collision.h"
 
 
-BOOLEAN rect_rect_collision(RECTANGLE rect1, RECTANGLE rect2) {
-    return rect1.x < rect2.x + rect2.width 
-    && rect1.x + rect1.width > rect2.x 
-    && rect1.y < rect2.y + rect2.height 
-    && rect1.height + rect1.y > rect2.y;
+BOOLEAN rect_rect_collision(RECTANGLE* rect1, RECTANGLE* rect2) {
+    return rect1->pos.x < rect2->pos.x + rect2->size.w
+    && rect1->pos.x + rect1->size.w > rect2->pos.x 
+    && rect1->pos.y < rect2->pos.y + rect2->size.h
+    && rect1->size.h + rect1->pos.y > rect2->pos.y;
 }
 
 

@@ -6,8 +6,16 @@
 typedef struct {
     UINT8 x;
     UINT8 y; 
-    UINT8 width;
-    UINT8 height;
+} VEC;
+
+typedef struct {
+    UINT8 w;
+    UINT8 h;
+} SIZE;
+
+typedef struct {
+    VEC pos;
+    SIZE size;
 } RECTANGLE;
 
 /**
