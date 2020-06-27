@@ -100,9 +100,10 @@ void main(void) {
     // https://gbdev.gg8.se/wiki/articles/GBDK_set_sprite_prop
     set_sprite_prop(PLAYER_SPRITE_ID, 0x00U);
 
-    UINT8 longueur_dash = 10;
-    UINT8 step1_dash = 4;
-    UINT8 step2_dash = 8;
+    UINT8 longueur_dash;
+    UINT8 step1_dash;
+    UINT8 step2_dash;
+    UINT8 step3_dash;
     while (1) {
         // Wait for v-blank (screen refresh)
         wait_vbl_done();
@@ -112,25 +113,32 @@ void main(void) {
         //if the player is dashing, he can't control his movement anymore 
         //after x iterations of the dash program, we set is_dashing to 0 and that ends the dash
         if (is_dashing) {
-            longueur_dash = 10;
+            longueur_dash = 12;
             step1_dash = 4;
-            step2_dash = 8;
-            if (dx != 0 && dy != 0){                //le mouvement est alors diagonal, on réduit la durée du dash
-                longueur_dash = 7;
-                step1_dash = 3;
-                step2_dash = 5;
+            step2_dash = 7;
+            step3_dash = 9;
+
+            if (dx != 0 && dy != 0){                //the length of the dash is reduced if the movement is diagonal
+                longueur_dash = 8;
+                step1_dash = 2;
+                step2_dash = 4;
+                step3_dash = 6;
             }
             if (compteur_dash == longueur_dash){           //we choose the length of the dash here
                 is_dashing = 0;
             }    
-            if (compteur_dash == step1_dash){
+            if (compteur_dash == step1_dash){               //the speed increases during the dash
                 dx = dx + dx;
                 dy = dy + dy;
             }  
             if (compteur_dash == step2_dash){
                 dx = dx + dx;
                 dy = dy + dy;
-            }                               
+            }      
+            if (compteur_dash == step3_dash){
+                if (dx > 30){dx = dx + 2;}if(dx > 0 && dx < 30){dx = dx -2;}      //the caracter slow down at the end of the dash
+                if (dy > 30){dy = dy + 2;}if(dy > 0 && dx < 30){dy = dy -2;}
+            }                          
             player_x += dx;
             player_y += dy;
 
