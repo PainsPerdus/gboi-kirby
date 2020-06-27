@@ -25,6 +25,9 @@ UINT8 player_y;
 UINT8 player_direction;
 UINT8 player_animation_frame;
 UINT8 is_player_walking;
+UINT8 is_dashing;
+UINT8 compteur_dash;
+
 
 // Flip the given sprite on X axis.
 //
@@ -78,6 +81,9 @@ void main(void) {
     player_direction = PLAYER_DIRECTION_DOWN;
     player_animation_frame = 0;
     is_player_walking = 0;
+    is_dashing = 0;
+    compteur_dash = 0;
+    
 
     // Load sprites' tiles in video memory
     set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
@@ -99,70 +105,81 @@ void main(void) {
         // Wait for v-blank (screen refresh)
         wait_vbl_done();
 
-        dx = 0;
-        dy = 0;
-
-        // Read joypad keys to know if the player is walking
-        // and in which direction
-        keys = joypad();
-        if (keys & J_UP) {
-            player_direction = PLAYER_DIRECTION_UP;
-            dy -= 1;
-        } if (keys & J_DOWN) {
-            player_direction = PLAYER_DIRECTION_DOWN;
-            dy += 1;
-        } if (keys & J_LEFT) {
-            player_direction = PLAYER_DIRECTION_LEFT;
-            dx -= 1;
-        } if (keys & J_RIGHT) {
-            player_direction = PLAYER_DIRECTION_RIGHT;
-            dx += 1;
-        }
-
-        //implementation of the dash  
-        //the caracter moves faster and is blocked in one direction for a few moment  
-        if (keys & J_SELECT) {
-            dx = dx + dx + dx;                  //we chose the speed of the dash here
-            dy = dy + dy + dy;
-            UINT8 compteur = 0;
-            while (compteur< 22){              //we choose the length of the dash here
-                wait_vbl_done();                //we wait for another frame 
-                player_x += dx;
-                player_y += dy;
-
-                move_sprite(PLAYER_SPRITE_ID, player_x, player_y);      //actualisation of the sprite
-                compteur += 1;
-            }
-        }
-
-       is_player_walking = (dx != 0 || dy != 0);
-
-        // Update the player position if it is walking
-        if (is_player_walking) {
-
+        
+        //if the player is dashing, he can't control his movement anymore 
+        //after x iterations of the dash program, we set is_dashing to 0 and that ends the dash
+        if (is_dashing) {
+            
+            if (compteur_dash == 16){           //we choose the length of the dash here
+                is_dashing = 0;
+            }                                 
             player_x += dx;
             player_y += dy;
 
-            move_sprite(PLAYER_SPRITE_ID, player_x, player_y);
-
-            // We do not update the animation on each frame: the animation
-            // will be too quick. So we skip frames
-            frame_skip -= 1;
-            if (!frame_skip) {
-                frame_skip = 8;
-            } else {
-                continue;
-            }
-        } else {
-            player_animation_frame = 0;
+            move_sprite(PLAYER_SPRITE_ID, player_x, player_y);      //actualisation of the sprite
+            compteur_dash += 1;
         }
+        
+        // Read joypad keys to know if the player is walking
+        // and in which direction
+        if (!is_dashing){               
+            dx = 0;
+            dy = 0;
+            keys = joypad();
+            if (keys & J_UP) {
+                player_direction = PLAYER_DIRECTION_UP;
+                dy -= 1;
+            } if (keys & J_DOWN) {
+                player_direction = PLAYER_DIRECTION_DOWN;
+                dy += 1;
+            } if (keys & J_LEFT) {
+                player_direction = PLAYER_DIRECTION_LEFT;
+                dx -= 1;
+            } if (keys & J_RIGHT) {
+                player_direction = PLAYER_DIRECTION_RIGHT;
+                dx += 1;
+            }
+
+            //implementation of the dash  
+            //the caracter moves faster and is blocked in one direction for a few moment  
+            if(keys & J_SELECT){
+                is_dashing = 1;
+                compteur_dash = 0;
+                dx = dx + dx + dx;                  //we chose the speed of the dash here
+                dy = dy + dy + dy;
+            }
+            
+
+            is_player_walking = (dx != 0 || dy != 0);
+
+            // Update the player position if it is walking
+            if (is_player_walking) {
+
+                player_x += dx;
+                player_y += dy;
+
+                move_sprite(PLAYER_SPRITE_ID, player_x, player_y);
+
+                // We do not update the animation on each frame: the animation
+                // will be too quick. So we skip frames
+                frame_skip -= 1;
+                if (!frame_skip) {
+                    frame_skip = 8;
+                } else {
+                    continue;
+                }
+            } else {
+                player_animation_frame = 0;
+            }
 
 
-        // Update sprites' tiles
-        player_animation_frame = update_sprite_animation(
-                PLAYER_SPRITE_ID,
-                PLAYER_SPRITE_ANIM,
-                player_direction,
-                player_animation_frame);
+            // Update sprites' tiles
+            player_animation_frame = update_sprite_animation(
+                    PLAYER_SPRITE_ID,
+                    PLAYER_SPRITE_ANIM,
+                    player_direction,
+                    player_animation_frame);
+        }
     }
+        
 }
