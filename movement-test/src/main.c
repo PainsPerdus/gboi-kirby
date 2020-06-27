@@ -1,6 +1,7 @@
 #include <gb/gb.h>
 
 #include "player.sprites.h"
+#include "collision.h"
 
 #define PLAYER_SPRITE_ID 0
 
@@ -20,11 +21,19 @@ UINT8 PLAYER_SPRITE_ANIM[] = {
 #define PLAYER_DIRECTION_LEFT  27
 
 // Variables containing player state
-UINT8 player_x;
-UINT8 player_y;
+RECTANGLE player;
 UINT8 player_direction;
 UINT8 player_animation_frame;
 UINT8 is_player_walking;
+
+#define SPRITE_OFFSET_X 8
+#define SPRITE_OFFSET_Y 8  // note: set at 8 even though sprites are 8px tall because of the perspective
+
+// Obstacles
+RECTANGLE LEFT_WALL = {{0, 0}, {24, 144}};
+RECTANGLE RIGHT_WALL = {{152, 0}, {8, 144}};
+RECTANGLE TOP_WALL = {{0, 0}, {160, 8}};
+RECTANGLE BOTTOM_WALL = {{0, 136}, {160, 8}};
 
 // Flip the given sprite on X axis.
 //
@@ -73,8 +82,11 @@ void main(void) {
     UINT8 dy = 0;
 
     // Initialize player's state
-    player_x = 80;
-    player_y = 72;
+    player.pos.x = 80;
+    player.pos.y = 72;
+    player.size.w = 8;
+    player.size.h = 8;
+
     player_direction = PLAYER_DIRECTION_DOWN;
     player_animation_frame = 0;
     is_player_walking = 0;
@@ -89,7 +101,8 @@ void main(void) {
     SHOW_SPRITES;
 
     // Init the sprite used for the player
-    move_sprite(PLAYER_SPRITE_ID, player_x, player_y);
+    // We have to add an offset because of the way the gb handles sprites
+    move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X, player.pos.y + SPRITE_OFFSET_Y);
 
     // https://gbdev.gg8.se/wiki/articles/GBDK_set_sprite_prop
     set_sprite_prop(PLAYER_SPRITE_ID, 0x00U);
@@ -124,10 +137,20 @@ void main(void) {
         // Update the player position if it is walking
         if (is_player_walking) {
 
-            player_x += dx;
-            player_y += dy;
+            RECTANGLE new_player = {
+                { player.pos.x + dx, player.pos.y + dy }, 
+                { player.size.w, player.size.h }
+            };
 
-            move_sprite(PLAYER_SPRITE_ID, player_x, player_y);
+            if (!rect_rect_collision(&new_player, &LEFT_WALL)
+                && !rect_rect_collision(&new_player, &RIGHT_WALL)
+                && !rect_rect_collision(&new_player, &TOP_WALL)
+                && !rect_rect_collision(&new_player, &BOTTOM_WALL)) {
+                player.pos = new_player.pos;
+            }
+
+
+            move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X, player.pos.y + SPRITE_OFFSET_Y);
 
             // We do not update the animation on each frame: the animation
             // will be too quick. So we skip frames
