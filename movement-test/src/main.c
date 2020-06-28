@@ -26,7 +26,6 @@ RECTANGLE player;
 RECTANGLE new_player;
 UINT8 player_direction;
 UINT8 player_animation_frame;
-UINT8 is_player_walking;
 
 #define SPRITE_OFFSET_X 8
 #define SPRITE_OFFSET_Y 8  // note: set at 8 even though sprites are 8px tall because of the perspective
@@ -152,7 +151,6 @@ void main(void) {
 
     player_direction = PLAYER_DIRECTION_DOWN;
     player_animation_frame = 0;
-    is_player_walking = 0;
 
     // Load sprites' tiles in video memory
     set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
@@ -183,115 +181,112 @@ void main(void) {
 
         read_input();
 
-       is_player_walking = (dx != 0 || dy != 0);
+        new_player.pos.x = player.pos.x + dx;
+        new_player.pos.y = player.pos.y + dy;
 
-        // Update the player position if it is walking
-        if (is_player_walking) {
+        current_diff.dx = 0;
+        current_diff.dy = 0;
+        total_diff.dx = dx;
+        total_diff.dy = dy;
 
-            new_player.pos.x = player.pos.x + dx;
-            new_player.pos.y = player.pos.y + dy;
+        MAX_MOVE_X = player.size.w - 1;
+        MAX_MOVE_Y = player.size.h - 1;
 
-            current_diff.dx = 0;
-            current_diff.dy = 0;
-            total_diff.dx = dx;
-            total_diff.dy = dy;
 
-            MAX_MOVE_X = player.size.w - 1;
-            MAX_MOVE_Y = player.size.h - 1;
+        while (total_diff.dx != 0 || total_diff.dy != 0) {
 
-            
-            while (total_diff.dx != 0 || total_diff.dy != 0) {
+          // Split movement into submoves (to avoid going past obstacles)
+          if (total_diff.dx >= MAX_MOVE_X)
+            current_diff.dx = MAX_MOVE_X;
+          else if (total_diff.dx <= -MAX_MOVE_X)
+            current_diff.dx = -MAX_MOVE_X;
+          else
+            current_diff.dx = total_diff.dx;
+          total_diff.dx -= current_diff.dx;
 
-                // Split movement into submoves (to avoid going past obstacles)
-                if (total_diff.dx >= MAX_MOVE_X)
-                    current_diff.dx = MAX_MOVE_X;
-                else if (total_diff.dx <= -MAX_MOVE_X)
-                    current_diff.dx = -MAX_MOVE_X;
-                else
-                    current_diff.dx = total_diff.dx;
-                total_diff.dx -= current_diff.dx;
+          new_player.pos.x = player.pos.x + current_diff.dx;
+          new_player.pos.y = player.pos.y;
 
-                new_player.pos.x = player.pos.x + current_diff.dx;
-                new_player.pos.y = player.pos.y;
+          // Collisions with the edges of the room
+          /*if (new_player.pos.x < 8)
+            new_player.pos.x = 8;
+            else if (new_player.pos.x + new_player.size.w > 8 + (ROOM_WIDTH << 3))
+            new_player.pos.x = 8 - new_player.size.w + (ROOM_WIDTH << 3);*/
 
-                // Collisions with the edges of the room
-                /*if (new_player.pos.x < 8)
-                    new_player.pos.x = 8;
-                else if (new_player.pos.x + new_player.size.w > 8 + (ROOM_WIDTH << 3))
-                    new_player.pos.x = 8 - new_player.size.w + (ROOM_WIDTH << 3);*/
+          effective_x = (player.pos.x >> 3) - 1;
+          effective_y = (player.pos.y >> 3) - 1;
 
-                effective_x = (player.pos.x >> 3) - 1;
-                effective_y = (player.pos.y >> 3) - 1;
+          BOOLEAN no_collision = TRUE;
+          for (UINT8 i = 0; (i < 3) && no_collision; i++) {
+            for (UINT8 j = 0; (j < 3) && no_collision; j++) {
+              UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
+              if (TILEMAP[k] != 0) {
+                block.pos.x = (effective_x + i) << 3;
+                block.pos.y = (effective_y + j) << 3;
 
-                BOOLEAN no_collision = TRUE;
-                for (UINT8 i = 0; (i < 3) && no_collision; i++) {
-                    for (UINT8 j = 0; (j < 3) && no_collision; j++) {
-                        UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
-                        if (TILEMAP[k] != 0) {
-                            block.pos.x = (effective_x + i) << 3;
-                            block.pos.y = (effective_y + j) << 3;
-                            
-                            if (rect_rect_collision(&new_player, &block)) {
-                                VEC_DIFF diff = {0, 0};
-                                rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
-                                player.pos.x += diff.dx;
-                                total_diff.dx = 0;
-                                no_collision = FALSE;
-                            }
-                        }
-                    }
+                if (rect_rect_collision(&new_player, &block)) {
+                  VEC_DIFF diff = {0, 0};
+                  rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
+                  player.pos.x += diff.dx;
+                  total_diff.dx = 0;
+                  no_collision = FALSE;
                 }
-                if (no_collision)
-                    player.pos.x = new_player.pos.x;
-                
+              }
+            }
+          }
+          if (no_collision)
+            player.pos.x = new_player.pos.x;
 
-                if (total_diff.dy >= MAX_MOVE_Y)
-                    current_diff.dy = MAX_MOVE_Y;
-                else if (total_diff.dy <= -MAX_MOVE_Y)
-                    current_diff.dy = -MAX_MOVE_Y;
-                else
-                    current_diff.dy = total_diff.dy;
-                total_diff.dy -= current_diff.dy;
-                new_player.pos.y = player.pos.y + current_diff.dy;
-                
-                effective_x = (new_player.pos.x >> 3) - 1;
-                effective_y = (new_player.pos.y >> 3) - 1;
 
-                no_collision = TRUE;
-                for (UINT8 i = 0; (i < 3) && no_collision; i++) {
-                    for (UINT8 j = 0; (j < 3) && no_collision; j++) {
-                        UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
-                        if (TILEMAP[k] != 0) {
-                            block.pos.x = (effective_x + i) << 3;
-                            block.pos.y = (effective_y + j) << 3;
-                            
-                            if (rect_rect_collision(&new_player, &block)) {
-                                VEC_DIFF diff = {0, 0};
-                                rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
-                                player.pos.y += diff.dy;
-                                total_diff.dy = 0;
-                                no_collision = FALSE;
-                            }
-                        }
-                    }
+          if (total_diff.dy >= MAX_MOVE_Y)
+            current_diff.dy = MAX_MOVE_Y;
+          else if (total_diff.dy <= -MAX_MOVE_Y)
+            current_diff.dy = -MAX_MOVE_Y;
+          else
+            current_diff.dy = total_diff.dy;
+          total_diff.dy -= current_diff.dy;
+          new_player.pos.y = player.pos.y + current_diff.dy;
+
+          effective_x = (new_player.pos.x >> 3) - 1;
+          effective_y = (new_player.pos.y >> 3) - 1;
+
+          no_collision = TRUE;
+          for (UINT8 i = 0; (i < 3) && no_collision; i++) {
+            for (UINT8 j = 0; (j < 3) && no_collision; j++) {
+              UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
+              if (TILEMAP[k] != 0) {
+                block.pos.x = (effective_x + i) << 3;
+                block.pos.y = (effective_y + j) << 3;
+
+                if (rect_rect_collision(&new_player, &block)) {
+                  VEC_DIFF diff = {0, 0};
+                  rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
+                  player.pos.y += diff.dy;
+                  total_diff.dy = 0;
+                  no_collision = FALSE;
                 }
-                if (no_collision)
-                    player.pos.y = new_player.pos.y;
-
+              }
             }
+          }
+          if (no_collision)
+            player.pos.y = new_player.pos.y;
+
+        }
 
 
-            move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
+        move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
 
-            // We do not update the animation on each frame: the animation
-            // will be too quick. So we skip frames
-            frame_skip -= 1;
-            if (!frame_skip) {
-                frame_skip = 8;
-            } else {
-                continue;
-            }
+        // We do not update the animation on each frame: the animation
+        // will be too quick. So we skip frames
+        frame_skip -= 1;
+        if (!frame_skip) {
+          frame_skip = 8;
         } else {
+          continue;
+        }
+
+        // XXX: this is not necessarily the right condition, but oh well.
+        if (dx == 0 && dy == 0){
             player_animation_frame = 0;
         }
 
