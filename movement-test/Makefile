@@ -13,6 +13,9 @@ all: build
 
 build: $(PROG).gb
 
+debug: $(wildcard src/*.c)
+	$(CC) -S $^
+
 $(PROG).gb: $(_OBJ)
 	$(CC) -o $(PROG).gb $^
 
@@ -27,6 +30,11 @@ assets:
 		--sprite8x16 \
 		--name PLAYER_SPRITES \
 		./piney.png
+	$(IMG2GB) tileset \
+		--output-c-file=src/tileset.c \
+		--output-header-file=src/tileset.h \
+		--name TILESET \
+		./tileset.png
 
 .PHONY: gbdk-2020
 gbdk-2020:
@@ -37,6 +45,7 @@ clean:
 	rm -rf src/*.lst
 	rm -rf src/*.sym
 	rm -rf src/*.asm
+	rm -rf src/*.o
 	rm -rf $(PROG).gb
 	rm -rf $(PROG).ihx
 	rm -rf $(PROG).map
@@ -44,3 +53,4 @@ clean:
 	rm -rf $(PROG).noi
 	rm -rf $(PROG).lk
 	rm src/player.sprites.*
+	rm src/tileset.*
