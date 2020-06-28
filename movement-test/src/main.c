@@ -127,32 +127,35 @@ static BOOLEAN is_dashing;
 
 
 void read_input() {
-    dx = 0;
-    dy = 0;
-
     // Read joypad keys to know if the player is walking
     // and in which direction
     keys = joypad();
-    if (keys & J_UP) {
-        player_direction = PLAYER_DIRECTION_UP;
-        dy -= 1;
-    } if (keys & J_DOWN) {
-        player_direction = PLAYER_DIRECTION_DOWN;
-        dy += 1;
-    } if (keys & J_LEFT) {
-        player_direction = PLAYER_DIRECTION_LEFT;
-        dx -= 1;
-    } if (keys & J_RIGHT) {
-        player_direction = PLAYER_DIRECTION_RIGHT;
-        dx += 1;
-    } if(keys & J_SELECT){
-      is_dashing = 1;
-      compteur_dash = 0;
+    if (!is_dashing) {
+      dx = 0;
+      dy = 0; 
+      if (keys & J_UP) {
+          player_direction = PLAYER_DIRECTION_UP;
+          dy -= 1;
+      } if (keys & J_DOWN) {
+          player_direction = PLAYER_DIRECTION_DOWN;
+          dy += 1;
+      } if (keys & J_LEFT) {
+          player_direction = PLAYER_DIRECTION_LEFT;
+          dx -= 1;
+      } if (keys & J_RIGHT) {
+          player_direction = PLAYER_DIRECTION_RIGHT;
+          dx += 1;
+      } 
 
-      // The speed of the dash is set here (2x normal speed).
-      dx = dx + dx;
-      dy = dy + dy;
-    }
+      if(keys & J_SELECT){
+        is_dashing = 1;
+        compteur_dash = 0;
+
+        // The speed of the dash is set here (2x normal speed).
+        dx = dx + dx;
+        dy = dy + dy;
+      }
+    } 
 
 }
 
@@ -251,8 +254,6 @@ void handle_dash() {
       if (dy > 30) dy = dy + 2;
       if (dy > 0 && dx < 30) dy = dy -2;
     }
-    player.pos.x += dx;
-    player.pos.y += dy;
 
     //move_sprite(PLAYER_SPRITE_ID, player.pos.x, player.pos.y);
     compteur_dash += 1;
@@ -357,6 +358,8 @@ void main(void) {
         wait_vbl_done();
 
         read_input();
+
+        handle_dash();
 
         handle_collisions();
 
