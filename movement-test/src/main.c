@@ -254,6 +254,7 @@ void main(void) {
         }
 
 
+        // Do NOT move this near update_sprite_animation...
         move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
 
         // We do not update the animation on each frame: the animation
