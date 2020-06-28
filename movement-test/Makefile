@@ -13,6 +13,9 @@ all: build
 
 build: $(PROG).gb
 
+debug: $(wildcard src/*.c)
+	$(CC) -S $^
+
 $(PROG).gb: $(_OBJ)
 	$(CC) -o $(PROG).gb $^
 
