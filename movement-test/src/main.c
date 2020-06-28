@@ -30,6 +30,8 @@ UINT8 player_animation_frame;
 #define SPRITE_OFFSET_X 8
 #define SPRITE_OFFSET_Y 8  // note: set at 8 even though sprites are 8px tall because of the perspective
 
+#define TILE_SIZE_PX 8
+
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
 
@@ -180,9 +182,11 @@ void init_player_state() {
 }
 
 
+
 #define MAX(x,y) ((x) < (y) ? (y) : (x))
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
 #define CLAMP(x, minVal, maxVal) MIN(MAX(minVal, x), maxVal)
+
 #define ABS_CLAMP(x, absMaxVal) CLAMP(x, -absMaxVal, absMaxVal)
 
 void main(void) { 
@@ -206,15 +210,15 @@ void main(void) {
         total_diff.dx = dx;
         total_diff.dy = dy;
 
-        MAX_MOVE_X = player.size.w - 1;
-        MAX_MOVE_Y = player.size.h - 1;
+        MAX_MOVE_X = TILE_SIZE_PX - 1;
+        MAX_MOVE_Y = TILE_SIZE_PX - 1;
 
 
         while (total_diff.dx != 0 || total_diff.dy != 0) {
-
           // Split movement into submoves (to avoid going past obstacles)
           
-          // X-coord submoves
+          // XXX: the generated assembly for those two lines is ridiculously
+          // long IMO (~104 instructions per line!).
           current_diff.dx = ABS_CLAMP(total_diff.dx, MAX_MOVE_X);
           current_diff.dy = ABS_CLAMP(total_diff.dy, MAX_MOVE_X);
 
