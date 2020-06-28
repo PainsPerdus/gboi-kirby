@@ -116,6 +116,14 @@ static VEC_DIFF total_diff = {0, 0};
 
 static RECTANGLE block = {{0, 0}, {8, 8}};
 
+static UINT8 longueur_dash;
+static UINT8 step1_dash;
+static UINT8 step2_dash;
+static UINT8 step3_dash;
+static UINT8 compteur_dash;
+static BOOLEAN is_dashing;
+
+
 
 
 void read_input() {
@@ -137,7 +145,15 @@ void read_input() {
     } if (keys & J_RIGHT) {
         player_direction = PLAYER_DIRECTION_RIGHT;
         dx += 1;
+    } if(keys & J_SELECT){
+      is_dashing = 1;
+      compteur_dash = 0;
+
+      // The speed of the dash is set here (2x normal speed).
+      dx = dx + dx;
+      dy = dy + dy;
     }
+
 }
 
 
@@ -193,6 +209,57 @@ void init_player_state() {
 #define ABS_CLAMP(x, absMaxVal) CLAMP(x, -absMaxVal, absMaxVal)
 
 
+void handle_dash() {
+  // TODO for dash: use Nolwenn's sprites.
+  // TODO: add a cooldown.
+
+  // If the player is dashing, he can't control his movement anymore
+  // after x iterations of the dashing code, we set is_dashing to 0 and that ends the dash
+  if (is_dashing) {
+    longueur_dash = 12;
+    step1_dash = 4;
+    step2_dash = 7;
+    step3_dash = 9;
+
+    // The length of the dash is reduced if the movement is diagonal.
+    if (dx != 0 && dy != 0){
+      longueur_dash = 8;
+      step1_dash = 2;
+      step2_dash = 4;
+      step3_dash = 6;
+    }
+
+    // End the dash if enough distance has been travelled.
+    if (compteur_dash == longueur_dash) {
+      is_dashing = 0;
+    }
+
+    // The speed increases during the dash
+    if (compteur_dash == step1_dash){
+      dx = dx + dx;
+      dy = dy + dy;
+    }
+    if (compteur_dash == step2_dash){
+      dx = dx + dx;
+      dy = dy + dy;
+    }
+    if (compteur_dash == step3_dash){
+      // The caracter slows down at the end of the dash
+
+      if (dx > 30) dx = dx + 2;
+      if (dx > 0 && dx < 30) dx = dx -2;
+      if (dy > 30) dy = dy + 2;
+      if (dy > 0 && dx < 30) dy = dy -2;
+    }
+    player.pos.x += dx;
+    player.pos.y += dy;
+
+    //move_sprite(PLAYER_SPRITE_ID, player.pos.x, player.pos.y);
+    compteur_dash += 1;
+  }
+}
+
+
 void handle_collisions() {
   total_diff.dx = dx;
   total_diff.dy = dy;
@@ -246,9 +313,16 @@ void handle_collisions() {
   }
 }
 
+void init_dash_state() {
+    is_dashing = 0;
+    compteur_dash = 0;
+}
+
 
 void main(void) { 
     init_player_state();
+    init_dash_state();
+
     init_graphics();
 
     while (1) {
