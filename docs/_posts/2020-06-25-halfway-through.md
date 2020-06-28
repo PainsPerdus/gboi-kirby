@@ -3,7 +3,7 @@ title: "PAF Day 5: Halfway through"
 author: ChatPion 
 category: devlog 
 tags: [tooling, graphics, gameplay, jekyll] 
-layout: post 
+layout: post
 date: 2020-06-25 12:00 +0200
 ---
 
