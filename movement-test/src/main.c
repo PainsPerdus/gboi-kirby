@@ -245,6 +245,7 @@ void main(void) {
                   new_player.pos.x += diff.dx;
                   new_player.pos.y += diff.dy;
                   total_diff.dx = 0;
+                  total_diff.dy = 0;
                   x_collision = TRUE;
                   y_collision = TRUE;
                 }
