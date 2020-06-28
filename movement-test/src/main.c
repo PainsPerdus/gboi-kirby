@@ -209,6 +209,8 @@ void main(void) {
         while (total_diff.dx != 0 || total_diff.dy != 0) {
 
           // Split movement into submoves (to avoid going past obstacles)
+          
+          // X-coord submoves
           if (total_diff.dx >= MAX_MOVE_X)
             current_diff.dx = MAX_MOVE_X;
           else if (total_diff.dx <= -MAX_MOVE_X)
@@ -218,6 +220,7 @@ void main(void) {
           total_diff.dx -= current_diff.dx;
 
 
+          // Y-coord submoves
           if (total_diff.dy >= MAX_MOVE_Y)
             current_diff.dy = MAX_MOVE_Y;
           else if (total_diff.dy <= -MAX_MOVE_Y)
@@ -225,8 +228,6 @@ void main(void) {
           else
             current_diff.dy = total_diff.dy;
           total_diff.dy -= current_diff.dy;
-          new_player.pos.y = player.pos.y + current_diff.dy;
-
 
 
           new_player.pos.x = player.pos.x + current_diff.dx;
@@ -253,8 +254,8 @@ void main(void) {
                 if (rect_rect_collision(&new_player, &block)) {
                   VEC_DIFF diff = {0, 0};
                   rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
-                  player.pos.x += diff.dx;
-                  player.pos.y += diff.dy;
+                  new_player.pos.x += diff.dx;
+                  new_player.pos.y += diff.dy;
                   total_diff.dx = 0;
                   x_collision = TRUE;
                   y_collision = TRUE;
@@ -263,11 +264,8 @@ void main(void) {
             }
           }
 
-
-          if (!x_collision)
-            player.pos.x = new_player.pos.x;
-          if (!y_collision)
-            player.pos.y = new_player.pos.y;
+          player.pos.x = new_player.pos.x;
+          player.pos.y = new_player.pos.y;
 
         }
 
