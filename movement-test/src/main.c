@@ -31,6 +31,8 @@ UINT8 player_animation_frame;
 #define SPRITE_OFFSET_Y 8  // note: set at 8 even though sprites are 8px tall because of the perspective
 
 #define TILE_SIZE_PX 8
+#define MAX_MOVE_X (TILE_SIZE_PX - 1)
+#define MAX_MOVE_Y (TILE_SIZE_PX - 1)
 
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
@@ -111,14 +113,15 @@ static UINT8 frame_skip = 8; // Update player's animation every 8 frame to
 static VEC_DIFF current_diff = {0, 0};
 static VEC_DIFF total_diff = {0, 0};
 
-static INT8 MAX_MOVE_X;
-static INT8 MAX_MOVE_Y;
 
 static RECTANGLE block = {{0, 0}, {8, 8}};
 
 
 
 void read_input() {
+    dx = 0;
+    dy = 0;
+
     // Read joypad keys to know if the player is walking
     // and in which direction
     keys = joypad();
@@ -174,6 +177,7 @@ void init_player_state() {
 
     // XXX: still not sure about new_player's precise role.
     // Is it the properties the player will have during the next frame?
+    // This is not really useful yet.
     new_player.size.w = player.size.w;
     new_player.size.h = player.size.h;
 
@@ -186,7 +190,6 @@ void init_player_state() {
 #define MAX(x,y) ((x) < (y) ? (y) : (x))
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
 #define CLAMP(x, minVal, maxVal) MIN(MAX(minVal, x), maxVal)
-
 #define ABS_CLAMP(x, absMaxVal) CLAMP(x, -absMaxVal, absMaxVal)
 
 void main(void) { 
@@ -197,22 +200,10 @@ void main(void) {
         // Wait for v-blank (screen refresh)
         wait_vbl_done();
 
-        dx = 0;
-        dy = 0;
-
         read_input();
 
-        new_player.pos.x = player.pos.x + dx;
-        new_player.pos.y = player.pos.y + dy;
-
-        current_diff.dx = 0;
-        current_diff.dy = 0;
         total_diff.dx = dx;
         total_diff.dy = dy;
-
-        MAX_MOVE_X = TILE_SIZE_PX - 1;
-        MAX_MOVE_Y = TILE_SIZE_PX - 1;
-
 
         while (total_diff.dx != 0 || total_diff.dy != 0) {
           // Split movement into submoves (to avoid going past obstacles)
@@ -234,8 +225,6 @@ void main(void) {
           effective_x = (player.pos.x >> 3) - 1;
           effective_y = (player.pos.y >> 3) - 1;
 
-
-          // XXX: this doesn't work for right angles.
           BOOLEAN x_collision = FALSE;
           BOOLEAN y_collision = FALSE;
           for (UINT8 i = 0; (i < 3) && !x_collision && !y_collision; i++) {
@@ -250,13 +239,10 @@ void main(void) {
                   rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
                   new_player.pos.x += diff.dx;
                   new_player.pos.y += diff.dy;
-
-                  // XXX: why?
                   total_diff.dx = 0;
                   total_diff.dy = 0;
-
-                  x_collision = (diff.dx != 0);
-                  y_collision = (diff.dy != 0);
+                  x_collision = TRUE;
+                  y_collision = TRUE;
                 }
               }
             }
