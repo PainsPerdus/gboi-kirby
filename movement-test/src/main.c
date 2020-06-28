@@ -137,40 +137,52 @@ void read_input() {
 
 
 
+void init_graphics() {
+    // Load sprites' tiles in video memory
+    set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
+    // Use 8x16 sprites
+    SPRITES_8x16;
+    // Makes sprites "layer" visible
+    SHOW_SPRITES;
 
-void main(void) { 
 
-    // Initialize player's state
+    set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
+    set_bkg_tiles(2, 0, 18, 18, TILEMAP);
+    SHOW_BKG;
+
+    // https://gbdev.gg8.se/wiki/articles/GBDK_set_sprite_prop
+    set_sprite_prop(PLAYER_SPRITE_ID, 0x00U);
+
+
+    // XXX: not sure this should be here.
+    // Init the sprite used for the player
+    // We have to add an offset because of the way the gb handles sprites
+    move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
+
+}
+
+
+void init_player_state() {
+    // XXX: it's wrong to just hardcode the player's position like that.
     player.pos.x = 80;
     player.pos.y = 72;
+
     player.size.w = 8;
     player.size.h = 8;
 
+    // XXX: still not sure about new_player's precise role.
+    // Is it the properties the player will have during the next frame?
     new_player.size.w = player.size.w;
     new_player.size.h = player.size.h;
 
     player_direction = PLAYER_DIRECTION_DOWN;
     player_animation_frame = 0;
+}
 
-    // Load sprites' tiles in video memory
-    set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
+void main(void) { 
+    init_player_state();
 
-    // Use 8x16 sprites
-    SPRITES_8x16;
-
-    // Makes sprites "layer" visible
-    SHOW_SPRITES;
-
-    // Init the sprite used for the player
-    // We have to add an offset because of the way the gb handles sprites
-    move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
-
-    // https://gbdev.gg8.se/wiki/articles/GBDK_set_sprite_prop
-    set_sprite_prop(PLAYER_SPRITE_ID, 0x00U);
-
-    set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
-    set_bkg_tiles(2, 0, 18, 18, TILEMAP);
-    SHOW_BKG;
+    init_graphics();
 
     while (1) {
         // Wait for v-blank (screen refresh)
