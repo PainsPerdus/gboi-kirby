@@ -115,6 +115,30 @@ static INT8 MAX_MOVE_Y;
 
 static RECTANGLE block = {{0, 0}, {8, 8}};
 
+
+
+void read_input() {
+    // Read joypad keys to know if the player is walking
+    // and in which direction
+    keys = joypad();
+    if (keys & J_UP) {
+        player_direction = PLAYER_DIRECTION_UP;
+        dy -= 1;
+    } if (keys & J_DOWN) {
+        player_direction = PLAYER_DIRECTION_DOWN;
+        dy += 1;
+    } if (keys & J_LEFT) {
+        player_direction = PLAYER_DIRECTION_LEFT;
+        dx -= 1;
+    } if (keys & J_RIGHT) {
+        player_direction = PLAYER_DIRECTION_RIGHT;
+        dx += 1;
+    }
+}
+
+
+
+
 void main(void) { 
 
     // Initialize player's state
@@ -157,22 +181,7 @@ void main(void) {
         dx = 0;
         dy = 0;
 
-        // Read joypad keys to know if the player is walking
-        // and in which direction
-        keys = joypad();
-        if (keys & J_UP) {
-            player_direction = PLAYER_DIRECTION_UP;
-            dy -= 1;
-        } if (keys & J_DOWN) {
-            player_direction = PLAYER_DIRECTION_DOWN;
-            dy += 1;
-        } if (keys & J_LEFT) {
-            player_direction = PLAYER_DIRECTION_LEFT;
-            dx -= 1;
-        } if (keys & J_RIGHT) {
-            player_direction = PLAYER_DIRECTION_RIGHT;
-            dx += 1;
-        }
+        read_input();
 
        is_player_walking = (dx != 0 || dy != 0);
 
