@@ -8,7 +8,7 @@ date: 2020-06-25 12:00 +0200
 ---
 
 Today we are exactly halfway through this project's allocated time − time
-really flies when you're having fun! Anyway, here's today program: struggling
+really flies when you're having fun! Anyway, here's today's program: struggling
 with Jekyll, struggling with gbdk-2020, map generation, more character
 movements, and graphics.
 
@@ -16,20 +16,20 @@ movements, and graphics.
 
 Jekyll is really handy for blogging, but for some reason, it fully displayed
 [@Ametheek's post]({% post_url 2020-06-25-some-explanation-on-graphics %})
-instead of only showing its excerpt. What's more, her post's content (in
-markdown) looked exactly like the other posts. After some digging, it turns out
-that Jekyll does _not_ like Window's line endings (`\r\n`). It may be possible
-to configure Jekyll to avoid this problem, but frankly, I don't want to spend
-more time setting this website up...
+instead of only showing its excerpt. What's more, the contents of her post (in
+Markdown) looked exactly like the other posts. After some digging, it turns out
+that Jekyll does _not_ like Windows-style line endings (CRLF - `\r\n`).
+It may be possible to configure Jekyll to avoid this problem, but frankly, I
+don't want to spend more time setting this website up...
 
 ## Struggling with gbdk-2020
 
 Switching from assembly to gbdk-n to gbdk-2020 was not an easy feat. While some
-of us did not have any problems compiling gbdk-2020 and running its samples,
-[@RoussyE](https://github.com/RoussyE) couldn't even compile it. Fortunately,
-[@nazebzurati's
+of us did not have any problems compiling gbdk-2020 and running the include
+examples, [@RoussyE](https://github.com/RoussyE) couldn't even compile it.
+Fortunately, [@nazebzurati's
 comment](https://github.com/Zal0/gbdk-2020/issues/28#issuecomment-649496832)
-fixed his problems. He could finally run gbdk-2020's sound sample and listen to
+fixed his problems. He could finally run gbdk-2020's sound example and listen to
 _Twinkle twinkle little star_ on an emulator. Hopefully, he'll be able to
 decipher the sample's source code and play music on his own.
 
