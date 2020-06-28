@@ -268,7 +268,7 @@ void handle_collisions() {
   while (total_diff.dx != 0 || total_diff.dy != 0) {
     // Split movement into submoves (to avoid going past obstacles)
 
-    // XXX: the generated assembly for this lines is ridiculously
+    // XXX: the generated assembly for this line is ridiculously
     // long IMO (~104 instructions per line!).
     current_diff.dx = ABS_CLAMP(total_diff.dx, MAX_MOVE_X);
 
