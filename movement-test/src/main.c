@@ -267,41 +267,68 @@ void handle_collisions() {
   while (total_diff.dx != 0 || total_diff.dy != 0) {
     // Split movement into submoves (to avoid going past obstacles)
 
-    // XXX: the generated assembly for those two lines is ridiculously
+    // XXX: the generated assembly for this lines is ridiculously
     // long IMO (~104 instructions per line!).
     current_diff.dx = ABS_CLAMP(total_diff.dx, MAX_MOVE_X);
-    current_diff.dy = ABS_CLAMP(total_diff.dy, MAX_MOVE_X);
 
     total_diff.dx -= current_diff.dx;
-    total_diff.dy -= current_diff.dy;
-
     new_player.pos.x = player.pos.x + current_diff.dx;
-    new_player.pos.y = player.pos.y + current_diff.dy;
 
 
-    // This seems to correspond to the player's position using tilemap
-    // coordinates.
-    effective_x = (new_player.pos.x >> 3) - 1;
-    effective_y = (new_player.pos.y >> 3) - 1;
+    // Player's position using tilemap coordinates
+    effective_x = (new_player.pos.x >> 3);
+    effective_y = (player.pos.y >> 3);
 
-    BOOLEAN x_collision = FALSE;
-    BOOLEAN y_collision = FALSE;
     for (UINT8 i = 0; i < 3; i++) {
       for (UINT8 j = 0; j < 3; j++) {
-        UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
+        INT8 block_x = (effective_x + i - 1);
+        INT8 block_y = (effective_y + j - 1);
+
+        if (block_x < 0 || block_x >= (INT8) ROOM_WIDTH + 2 || block_y < 0 || block_y >= (INT8) ROOM_HEIGHT + 2)  // out of bounds
+          continue;
+
+        INT16 k = block_y * (ROOM_WIDTH + 2) + block_x;
+
         if (TILEMAP[k] != 0) {
-          block.pos.x = (effective_x + i) << 3;
-          block.pos.y = (effective_y + j) << 3;
+          block.pos.x = block_x << 3;
+          block.pos.y = block_y << 3;
 
           if (rect_rect_collision(&new_player, &block)) {
             VEC_DIFF diff = {0, 0};
             rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
             new_player.pos.x += diff.dx;
-            new_player.pos.y += diff.dy;
             total_diff.dx = 0;
+          }
+        }
+      }
+    }
+
+    current_diff.dy = ABS_CLAMP(total_diff.dy, MAX_MOVE_Y);
+    total_diff.dy -= current_diff.dy;
+    new_player.pos.y = player.pos.y + current_diff.dy;
+
+    effective_x = (new_player.pos.x >> 3);
+    effective_y = (new_player.pos.y >> 3);
+
+    for (UINT8 i = 0; i < 3; i++) {
+      for (UINT8 j = 0; j < 3; j++) {
+        INT8 block_x = (effective_x + i - 1);
+        INT8 block_y = (effective_y + j - 1);
+
+        if (block_x < 0 || block_x >= (INT8) ROOM_WIDTH + 2 || block_y < 0 || block_y >= (INT8) ROOM_HEIGHT + 2)  // out of bounds
+          continue;
+
+        INT16 k = block_y * (ROOM_WIDTH + 2) + block_x;
+
+        if (TILEMAP[k] != 0) {
+          block.pos.x = block_x << 3;
+          block.pos.y = block_y << 3;
+
+          if (rect_rect_collision(&new_player, &block)) {
+            VEC_DIFF diff = {0, 0};
+            rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
+            new_player.pos.y += diff.dy;
             total_diff.dy = 0;
-            x_collision = TRUE;
-            y_collision = TRUE;
           }
         }
       }
