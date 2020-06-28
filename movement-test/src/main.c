@@ -234,6 +234,8 @@ void main(void) {
           effective_x = (player.pos.x >> 3) - 1;
           effective_y = (player.pos.y >> 3) - 1;
 
+
+          // XXX: this doesn't work for right angles.
           BOOLEAN x_collision = FALSE;
           BOOLEAN y_collision = FALSE;
           for (UINT8 i = 0; (i < 3) && !x_collision && !y_collision; i++) {
@@ -248,10 +250,13 @@ void main(void) {
                   rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
                   new_player.pos.x += diff.dx;
                   new_player.pos.y += diff.dy;
+
+                  // XXX: why?
                   total_diff.dx = 0;
                   total_diff.dy = 0;
-                  x_collision = TRUE;
-                  y_collision = TRUE;
+
+                  x_collision = (diff.dx != 0);
+                  y_collision = (diff.dy != 0);
                 }
               }
             }
