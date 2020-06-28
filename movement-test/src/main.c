@@ -181,7 +181,6 @@ void init_player_state() {
 
 void main(void) { 
     init_player_state();
-
     init_graphics();
 
     while (1) {
@@ -228,9 +227,9 @@ void main(void) {
           effective_x = (player.pos.x >> 3) - 1;
           effective_y = (player.pos.y >> 3) - 1;
 
-          BOOLEAN no_collision = TRUE;
-          for (UINT8 i = 0; (i < 3) && no_collision; i++) {
-            for (UINT8 j = 0; (j < 3) && no_collision; j++) {
+          BOOLEAN collision = FALSE;
+          for (UINT8 i = 0; (i < 3) && !collision; i++) {
+            for (UINT8 j = 0; (j < 3) && !collision; j++) {
               UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
               if (TILEMAP[k] != 0) {
                 block.pos.x = (effective_x + i) << 3;
@@ -241,12 +240,12 @@ void main(void) {
                   rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
                   player.pos.x += diff.dx;
                   total_diff.dx = 0;
-                  no_collision = FALSE;
+                  collision = TRUE;
                 }
               }
             }
           }
-          if (no_collision)
+          if (!collision)
             player.pos.x = new_player.pos.x;
 
 
@@ -262,9 +261,9 @@ void main(void) {
           effective_x = (new_player.pos.x >> 3) - 1;
           effective_y = (new_player.pos.y >> 3) - 1;
 
-          no_collision = TRUE;
-          for (UINT8 i = 0; (i < 3) && no_collision; i++) {
-            for (UINT8 j = 0; (j < 3) && no_collision; j++) {
+          collision = FALSE;
+          for (UINT8 i = 0; (i < 3) && !collision; i++) {
+            for (UINT8 j = 0; (j < 3) && !collision; j++) {
               UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
               if (TILEMAP[k] != 0) {
                 block.pos.x = (effective_x + i) << 3;
@@ -275,12 +274,12 @@ void main(void) {
                   rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
                   player.pos.y += diff.dy;
                   total_diff.dy = 0;
-                  no_collision = FALSE;
+                  collision = TRUE;
                 }
               }
             }
           }
-          if (no_collision)
+          if (!collision)
             player.pos.y = new_player.pos.y;
 
         }
