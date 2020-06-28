@@ -16,12 +16,12 @@ void rect_rect_penetration(VEC* old_pos, VEC* new_pos, SIZE* size, RECTANGLE* ob
     // player from left
     if (old_pos->x + size->w <= obstacle->pos.x 
         && obstacle->pos.x < new_pos->x + size->w)
-        diff->dx = obstacle->pos.x - (new_pos->x - size->w);
+        diff->dx = obstacle->pos.x - (new_pos->x + size->w);
 
     // player from top
     if (old_pos->y + size->h <= obstacle->pos.y
         && obstacle->pos.y < new_pos->y + size->h)
-        diff->dy = obstacle->pos.y - (new_pos->y - size->h);
+        diff->dy = obstacle->pos.y - (new_pos->y + size->h);
 
     // player from right
     if (old_pos->x >= obstacle->pos.x + obstacle->size.w
