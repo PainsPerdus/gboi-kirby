@@ -319,7 +319,7 @@ void init_dash_state() {
 }
 
 
-void main(void) { 
+void main(void) {
     init_player_state();
     init_dash_state();
 

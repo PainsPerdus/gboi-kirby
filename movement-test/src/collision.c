@@ -4,7 +4,7 @@
 
 BOOLEAN rect_rect_collision(RECTANGLE* rect1, RECTANGLE* rect2) {
     return rect1->pos.x < rect2->pos.x + rect2->size.w
-    && rect1->pos.x + rect1->size.w > rect2->pos.x 
+    && rect1->pos.x + rect1->size.w > rect2->pos.x
     && rect1->pos.y < rect2->pos.y + rect2->size.h
     && rect1->size.h + rect1->pos.y > rect2->pos.y;
 }
@@ -12,9 +12,9 @@ BOOLEAN rect_rect_collision(RECTANGLE* rect1, RECTANGLE* rect2) {
 void rect_rect_penetration(VEC* old_pos, VEC* new_pos, SIZE* size, RECTANGLE* obstacle, VEC_DIFF* diff) {
     diff->dx = 0;
     diff->dy = 0;
-    
+
     // player from left
-    if (old_pos->x + size->w <= obstacle->pos.x 
+    if (old_pos->x + size->w <= obstacle->pos.x
         && obstacle->pos.x < new_pos->x + size->w)
         diff->dx = obstacle->pos.x - (new_pos->x + size->w);
 
