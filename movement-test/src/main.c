@@ -180,6 +180,10 @@ void init_player_state() {
 }
 
 
+#define MAX(x,y) ((x) < (y) ? (y) : (x))
+#define MIN(x,y) ((x) < (y) ? (x) : (y))
+#define CLAMP(x, minVal, maxVal) MIN(MAX(minVal, x), maxVal)
+#define ABS_CLAMP(x, absMaxVal) CLAMP(x, -absMaxVal, absMaxVal)
 
 void main(void) { 
     init_player_state();
@@ -211,34 +215,18 @@ void main(void) {
           // Split movement into submoves (to avoid going past obstacles)
           
           // X-coord submoves
-          if (total_diff.dx >= MAX_MOVE_X)
-            current_diff.dx = MAX_MOVE_X;
-          else if (total_diff.dx <= -MAX_MOVE_X)
-            current_diff.dx = -MAX_MOVE_X;
-          else
-            current_diff.dx = total_diff.dx;
+          current_diff.dx = ABS_CLAMP(total_diff.dx, MAX_MOVE_X);
+          current_diff.dy = ABS_CLAMP(total_diff.dy, MAX_MOVE_X);
+
           total_diff.dx -= current_diff.dx;
-
-
-          // Y-coord submoves
-          if (total_diff.dy >= MAX_MOVE_Y)
-            current_diff.dy = MAX_MOVE_Y;
-          else if (total_diff.dy <= -MAX_MOVE_Y)
-            current_diff.dy = -MAX_MOVE_Y;
-          else
-            current_diff.dy = total_diff.dy;
           total_diff.dy -= current_diff.dy;
-
 
           new_player.pos.x = player.pos.x + current_diff.dx;
           new_player.pos.y = player.pos.y + current_diff.dy;
 
-          // Collisions with the edges of the room
-          /*if (new_player.pos.x < 8)
-            new_player.pos.x = 8;
-            else if (new_player.pos.x + new_player.size.w > 8 + (ROOM_WIDTH << 3))
-            new_player.pos.x = 8 - new_player.size.w + (ROOM_WIDTH << 3);*/
 
+          // This seems to correspond to the player's position using tilemap
+          // coordinates.
           effective_x = (player.pos.x >> 3) - 1;
           effective_y = (player.pos.y >> 3) - 1;
 
