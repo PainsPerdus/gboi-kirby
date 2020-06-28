@@ -281,13 +281,13 @@ void handle_collisions() {
 
     // This seems to correspond to the player's position using tilemap
     // coordinates.
-    effective_x = (player.pos.x >> 3) - 1;
-    effective_y = (player.pos.y >> 3) - 1;
+    effective_x = (new_player.pos.x >> 3) - 1;
+    effective_y = (new_player.pos.y >> 3) - 1;
 
     BOOLEAN x_collision = FALSE;
     BOOLEAN y_collision = FALSE;
-    for (UINT8 i = 0; (i < 3) && !x_collision && !y_collision; i++) {
-      for (UINT8 j = 0; (j < 3) && !x_collision && !y_collision; j++) {
+    for (UINT8 i = 0; i < 3; i++) {
+      for (UINT8 j = 0; j < 3; j++) {
         UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
         if (TILEMAP[k] != 0) {
           block.pos.x = (effective_x + i) << 3;
