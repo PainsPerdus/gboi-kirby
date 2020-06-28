@@ -269,7 +269,7 @@ void handle_collisions() {
     // Split movement into submoves (to avoid going past obstacles)
 
     // XXX: the generated assembly for this line is ridiculously
-    // long IMO (~104 instructions per line!).
+    // long IMO (~104 instructions).
     current_diff.dx = ABS_CLAMP(total_diff.dx, MAX_MOVE_X);
 
     total_diff.dx -= current_diff.dx;
