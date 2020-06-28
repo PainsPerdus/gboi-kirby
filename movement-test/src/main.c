@@ -220,8 +220,8 @@ void main(void) {
                 else if (new_player.pos.x + new_player.size.w > 8 + (ROOM_WIDTH << 3))
                     new_player.pos.x = 8 - new_player.size.w + (ROOM_WIDTH << 3);*/
 
-                effective_x = (new_player.pos.x >> 3) - 1;
-                effective_y = (new_player.pos.y >> 3) - 1;
+                effective_x = (player.pos.x >> 3) - 1;
+                effective_y = (player.pos.y >> 3) - 1;
 
                 BOOLEAN no_collision = TRUE;
                 for (UINT8 i = 0; (i < 3) && no_collision; i++) {
