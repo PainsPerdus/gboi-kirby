@@ -179,6 +179,8 @@ void init_player_state() {
     player_animation_frame = 0;
 }
 
+
+
 void main(void) { 
     init_player_state();
     init_graphics();
@@ -215,39 +217,6 @@ void main(void) {
             current_diff.dx = total_diff.dx;
           total_diff.dx -= current_diff.dx;
 
-          new_player.pos.x = player.pos.x + current_diff.dx;
-          new_player.pos.y = player.pos.y;
-
-          // Collisions with the edges of the room
-          /*if (new_player.pos.x < 8)
-            new_player.pos.x = 8;
-            else if (new_player.pos.x + new_player.size.w > 8 + (ROOM_WIDTH << 3))
-            new_player.pos.x = 8 - new_player.size.w + (ROOM_WIDTH << 3);*/
-
-          effective_x = (player.pos.x >> 3) - 1;
-          effective_y = (player.pos.y >> 3) - 1;
-
-          BOOLEAN collision = FALSE;
-          for (UINT8 i = 0; (i < 3) && !collision; i++) {
-            for (UINT8 j = 0; (j < 3) && !collision; j++) {
-              UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
-              if (TILEMAP[k] != 0) {
-                block.pos.x = (effective_x + i) << 3;
-                block.pos.y = (effective_y + j) << 3;
-
-                if (rect_rect_collision(&new_player, &block)) {
-                  VEC_DIFF diff = {0, 0};
-                  rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
-                  player.pos.x += diff.dx;
-                  total_diff.dx = 0;
-                  collision = TRUE;
-                }
-              }
-            }
-          }
-          if (!collision)
-            player.pos.x = new_player.pos.x;
-
 
           if (total_diff.dy >= MAX_MOVE_Y)
             current_diff.dy = MAX_MOVE_Y;
@@ -258,12 +227,24 @@ void main(void) {
           total_diff.dy -= current_diff.dy;
           new_player.pos.y = player.pos.y + current_diff.dy;
 
-          effective_x = (new_player.pos.x >> 3) - 1;
-          effective_y = (new_player.pos.y >> 3) - 1;
 
-          collision = FALSE;
-          for (UINT8 i = 0; (i < 3) && !collision; i++) {
-            for (UINT8 j = 0; (j < 3) && !collision; j++) {
+
+          new_player.pos.x = player.pos.x + current_diff.dx;
+          new_player.pos.y = player.pos.y + current_diff.dy;
+
+          // Collisions with the edges of the room
+          /*if (new_player.pos.x < 8)
+            new_player.pos.x = 8;
+            else if (new_player.pos.x + new_player.size.w > 8 + (ROOM_WIDTH << 3))
+            new_player.pos.x = 8 - new_player.size.w + (ROOM_WIDTH << 3);*/
+
+          effective_x = (player.pos.x >> 3) - 1;
+          effective_y = (player.pos.y >> 3) - 1;
+
+          BOOLEAN x_collision = FALSE;
+          BOOLEAN y_collision = FALSE;
+          for (UINT8 i = 0; (i < 3) && !x_collision && !y_collision; i++) {
+            for (UINT8 j = 0; (j < 3) && !x_collision && !y_collision; j++) {
               UINT16 k = (effective_y + j) * (ROOM_WIDTH + 2) + (effective_x + i);
               if (TILEMAP[k] != 0) {
                 block.pos.x = (effective_x + i) << 3;
@@ -272,14 +253,20 @@ void main(void) {
                 if (rect_rect_collision(&new_player, &block)) {
                   VEC_DIFF diff = {0, 0};
                   rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
+                  player.pos.x += diff.dx;
                   player.pos.y += diff.dy;
-                  total_diff.dy = 0;
-                  collision = TRUE;
+                  total_diff.dx = 0;
+                  x_collision = TRUE;
+                  y_collision = TRUE;
                 }
               }
             }
           }
-          if (!collision)
+
+
+          if (!x_collision)
+            player.pos.x = new_player.pos.x;
+          if (!y_collision)
             player.pos.y = new_player.pos.y;
 
         }
