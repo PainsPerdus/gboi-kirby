@@ -8,8 +8,9 @@
 #define ENEMY_ATTACK_SELF 2 // used for teting purposes
 
 struct ENEMY {
-	UINT8 enemy_sprite_l; // enemy left sprite
+	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
 	UINT8 enemy_sprite_r; // enemy right sprite
+	UINT8 sprite_id; // sprite ID (0-39)
 	UINT8 attack_type; // enemy attack type, see constants defined above
 	UINT8 max_health; // monster max HP
 	UINT8 health; // monster current HP
@@ -64,35 +65,56 @@ const UINT8 BKG_TILEMAP[] = {
 };
 
 // Initialize an enemy unit
-void init_enemy(ENEMY *unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 fba)
+void init_enemy(ENEMY *unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s_id, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 fba)
 {
 	unit->enemy_sprite_l = enemy_sprite_l;
 	unit->enemy_sprite_r = enemy_sprite_r;
+	unit->sprite_id = s_id;
 	unit->attack_type = attack_type;
 	unit->max_health = hp;
-	unit->health = hp;
+	unit->health = hp; // Enemies always start with 100% HP.
 	unit->damage = damage;
 	unit->frames_between_attacks = fba;
-	unit->frames_until_next_attack = fba; // One full cycle before the enemy starts behaving normally. Might want to be able to configure that.
+	unit->frames_until_next_attack = fba; // There is one full cycle before the enemy starts behaving normally. Might want to be able to configure that.
 }
 
 // (To be tested) Display enemy unit on-screen, with specified sprite number (0-39), at specified x and y coordinates.
-void display_enemy(ENEMY *unit, UINT8 number, UINT8 xpos, UINT ypos)
+void display_enemy(ENEMY *unit, UINT8 xpos, UINT ypos)
 {
 	// Initialize left sprite
-	set_sprite_tile(number, unit->enemy_sprite_l);
-	move_sprite(number, xpos, ypos);
+	set_sprite_tile(unit->sprite_id, unit->enemy_sprite_l);
+	move_sprite(unit->sprite_id, xpos, ypos);
 	
 	// Initialize right sprite (#TODO: check whether the number parameter is correctly handled)
-	set_sprite_tile(number+1, unit->enemy_sprite_r);
-	move_sprite(number+1, xpos, ypos+8);
+	set_sprite_tile(unit->sprite_id + 1, unit->enemy_sprite_r);
+	move_sprite(unit->sprite_id + 1, xpos, ypos + 8);
 }
 
-// #TODO: Play death sequence (blinking, presumably), then make the enemy disappear
+// Play death sequence (blinking, presumably), then make the enemy disappear
 void enemy_death(ENEMY *unit)
 {
-	// Blinking animation: TODO
-	// Enemy disappearance: TODO
+	// Blinking animation - disabled for now
+	/*
+	UINT8 blinking_cycles = 0;
+	UINT8 cycle_state = 1;
+	
+	while (blinking_cycles < 30)
+	{
+		if (cycle_state) // Disappears
+		{
+			move_sprite(unit->sprite_id, );
+			cycle_state = 0;
+		}
+		else
+		{
+			move_sprite();
+		}
+	}
+	*/
+	
+	// Enemy disappears
+	move_sprite(unit->sprite_id, 168, 0);
+	move_sprite(unit->sprite_id + 1, 168, 0);
 }
 
 // Enemy unit loses specified amount of HP
@@ -110,7 +132,7 @@ void enemy_hp_loss(ENEMY *unit, UINT8 amount)
 	}
 }
 
-// Enemy unit gains specified amount of HP. This is capped to max enemy health.
+// Enemy unit gains specified amount of HP. This is capped to max enemy health. (To be tested.)
 void enemy_hp_regen(ENEMY *unit, UINT8 amount)
 {
 	if (unit->health + amount <= unit->max_health) // Gain intended amount
