@@ -74,7 +74,7 @@ void display_enemy(ENEMY *unit, UINT8 xpos, UINT8 ypos) {
 	
 	// Initialize right sprite (#TODO: check whether the number parameter is correctly handled)
 	set_sprite_tile(unit->sprite_id + 1, unit->enemy_sprite_r);
-	move_sprite(unit->sprite_id + 1, xpos, ypos + 8);
+	move_sprite(unit->sprite_id + 1, xpos + 8, ypos);
 }
 
 // Play death sequence (blinking, presumably), then make the enemy disappear
@@ -84,8 +84,10 @@ void enemy_death(ENEMY *unit) {
 	UINT8 blinking_cycles = 0;
 	UINT8 cycle_state = 1;
 	
-	while (blinking_cycles < 30)
+	while (blinking_cycles < 10)
 	{
+		wait_vbl_done();
+		
 		if (cycle_state) // Disappears
 		{
 			move_sprite(unit->sprite_id, );
