@@ -1,5 +1,6 @@
 #include <gb/gb.h>
 
+#include "tileset.h"
 #include "dummy-tileset.h"
 
 #define ENEMY_ATTACK_PROJECTILE 0
@@ -21,36 +22,25 @@ typedef struct enemy {
 	// - projectile speed (if we decide that it depends on the monster rather than, for example, on how far the player got in the game)
 } ENEMY;
 
-// Temporary background tileset for testing purposes
-const UINT8 BKG_TILESET[] = {
-    // Tile 00: Blank
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    // Tile 01: Block
-    0xff, 0x01, 0x81, 0x7f, 0xbd, 0x7f, 0xa5, 0x7b,
-    0xa5, 0x7b, 0xbd, 0x63, 0x81, 0x7f, 0xff, 0xff
-};
-
-// Temporary tilemap for testing purposes
-const UINT8 BKG_TILEMAP[] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+const UINT8 TILEMAP[18*18] = {
+    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
+    4,0,0,0,1,0,0,0,0,0,0,0,1,1,1,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 };
 
 // Initialize an enemy unit
@@ -66,13 +56,13 @@ void init_enemy(ENEMY *unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s
 	unit->frames_until_next_attack = fba; // There is one full cycle before the enemy starts behaving normally. Might want to be able to configure that.
 }
 
-// (To be tested) Display enemy unit on-screen, with specified sprite number (0-39), at specified x and y coordinates.
+// Display enemy unit on-screen, with specified sprite number (0-39), at specified x and y coordinates.
 void display_enemy(ENEMY *unit, UINT8 xpos, UINT8 ypos) {
 	// Initialize left sprite
 	set_sprite_tile(unit->sprite_id, unit->enemy_sprite_l);
 	move_sprite(unit->sprite_id, xpos, ypos);
 	
-	// Initialize right sprite (#TODO: check whether the number parameter is correctly handled)
+	// Initialize right sprite
 	set_sprite_tile(unit->sprite_id + 1, unit->enemy_sprite_r);
 	move_sprite(unit->sprite_id + 1, xpos + 8, ypos);
 }
@@ -152,8 +142,8 @@ void enemy_attack(ENEMY *unit) {
 }
 
 void main(void) {
-    set_bkg_data(0, 2, BKG_TILESET);
-    set_bkg_tiles(0, 0, 20, 18, BKG_TILEMAP);
+    set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
+    set_bkg_tiles(2, 0, 18, 18, TILEMAP);
 	set_sprite_data(0, 4, DUMMY_SPRITES);
 	ENEMY basic;
 
