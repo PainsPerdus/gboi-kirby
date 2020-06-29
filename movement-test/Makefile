@@ -1,24 +1,25 @@
 # pod = Pineapple of Doom
 PROG = pod
 
-GBDK_N = ../gbdk-n
-CC = $(GBDK_N)/bin/gbdk-n-compile.sh
-LD = $(GBDK_N)/bin/gbdk-n-link.sh
-MR = $(GBDK_N)/bin/gbdk-n-make-rom.sh
+export SDCCDIR=/usr  # might not work for everyone
+GBDK_2020 = ../gbdk-2020/
+CC = $(GBDK_2020)/build/gbdk/bin/lcc -Wa-l -Wl-m -Wl-j
 IMG2GB = img2gb
 
-_OBJ = $(patsubst %.c,%.rel,$(wildcard src/*.c))
+_OBJ = $(patsubst %.c,%.o,$(wildcard src/*.c))
 
 
 all: build
 
 build: $(PROG).gb
 
-$(PROG).gb: $(_OBJ)
-	$(LD) -o $(PROG).ihx $^
-	$(MR) $(PROG).ihx $(PROG).gb
+debug: $(wildcard src/*.c)
+	$(CC) -S $^
 
-%.rel: %.c
+$(PROG).gb: $(_OBJ)
+	$(CC) -o $(PROG).gb $^
+
+%.o: %.c
 	$(CC) -o $@ -c $<
 
 assets:
@@ -29,16 +30,22 @@ assets:
 		--sprite8x16 \
 		--name PLAYER_SPRITES \
 		./piney.png
+	$(IMG2GB) tileset \
+		--output-c-file=src/tileset.c \
+		--output-header-file=src/tileset.h \
+		--name TILESET \
+		./tileset.png
 
-.PHONY: gbdk-n
-gbdk-n:
-	cd $(GBDK_N) && make
+.PHONY: gbdk-2020
+gbdk-2020:
+	cd $(GBDK_2020) && make
 
 clean:
 	rm -rf src/*.rel
 	rm -rf src/*.lst
 	rm -rf src/*.sym
 	rm -rf src/*.asm
+	rm -rf src/*.o
 	rm -rf $(PROG).gb
 	rm -rf $(PROG).ihx
 	rm -rf $(PROG).map
@@ -46,3 +53,4 @@ clean:
 	rm -rf $(PROG).noi
 	rm -rf $(PROG).lk
 	rm src/player.sprites.*
+	rm src/tileset.*
