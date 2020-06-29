@@ -107,7 +107,7 @@ void enemy_death(ENEMY *unit) {
 
 // Enemy unit loses specified amount of HP
 void enemy_hp_loss(ENEMY *unit, UINT8 amount) {
-	if (amount < unit->health) // The unit survives, so it just loses the specified amount of HP
+	if (amount > unit->health) // The unit survives, so it just loses the specified amount of HP
 	{
 		unit->health -= amount;
 		// Optional: might want to shout "ouch" or something
