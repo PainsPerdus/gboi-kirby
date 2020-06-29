@@ -1,14 +1,15 @@
 #include <gb/gb.h>
 
+#define ENEMY_SPRITE_L_ID 0
+#define ENEMY_SPRITE_R_ID 1
+
 #define ENEMY_ATTACK_PROJECTILE 0
 #define ENEMY_ATTACK_MELEE 1
 #define ENEMY_ATTACK_SELF 2 // used for teting purposes
 
 struct ENEMY {
-	UINT8 enemy_sprite_tl; // enemy top-left sprite
-	UINT8 enemy_sprite_tr; // enemy top-right sprite
-	UINT8 enemy_sprite_bl; // enemy bottom-left sprite
-	UINT8 enemy_sprite_br; // enemy bottom-right sprite
+	UINT8 enemy_sprite_l; // enemy left sprite
+	UINT8 enemy_sprite_r; // enemy right sprite
 	UINT8 attack_type; // enemy attack type, see constants defined above
 	UINT8 max_health; // monster max HP
 	UINT8 health; // monster current HP
@@ -29,7 +30,7 @@ const UINT8 BKG_TILESET[] = {
     0xa5, 0x7b, 0xbd, 0x63, 0x81, 0x7f, 0xff, 0xff,
 };
 
-// Temporary sprites tileset for testing purposes
+// TO BE CHANGED: Temporary sprites tileset for testing purposes
 const UINT8 SPRITE_TILESET[] = {
 	// Tile 00: will be temporarily used as a placeholder for the projectile
     0x7e, 0x00, 0x81, 0x7f, 0x81, 0x7f, 0x81, 0x7f,
@@ -62,12 +63,10 @@ const UINT8 BKG_TILEMAP[] = {
 };
 
 // Initialize an enemy unit
-void init_enemy(ENEMY *unit, UINT8 enemy_sprite_tl, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 fba)
+void init_enemy(ENEMY *unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 fba)
 {
-	unit->enemy_sprite_tl = enemy_sprite_tl;
-	unit->enemy_sprite_tr = enemy_sprite_tr;
-	unit->enemy_sprite_bl = enemy_sprite_bl;
-	unit->enemy_sprite_br = enemy_sprite_br;
+	unit->enemy_sprite_l = enemy_sprite_l;
+	unit->enemy_sprite_r = enemy_sprite_r;
 	unit->attack_type = attack_type;
 	unit->max_health = hp;
 	unit->health = hp;
@@ -75,10 +74,11 @@ void init_enemy(ENEMY *unit, UINT8 enemy_sprite_tl, UINT8 attack_type, UINT8 dam
 	unit->frames_between_attacks = fba;
 }
 
-// #TODO: Display enemy unit on screen at specified x and y coordinates
-void display_enemy(ENEMY *unit, UINT8 xpos, UINT ypos)
+// #TODO: Display enemy unit on-screen, with specified sprite number (0-39), at specified x and y coordinates.
+void display_enemy(ENEMY *unit, UINT8 number, UINT8 xpos, UINT ypos)
 {
-	// TODO
+	// Initialize left sprite
+	set_sprite_tile(number, unit->enemy_sprite_l);
 }
 
 // #TODO: Play death sequence (blinking, presumably), then make the enemy disappear
@@ -94,6 +94,7 @@ void enemy_hp_loss(ENEMY *unit, UINT8 amount)
 	if (amount < unit->health) // The unit survives, so it just loses the specified amount of HP
 	{
 		unit->health -= amount;
+		// Optional: might want to shout "ouch" or something
 	}
 	else // The unit dies: bring its HP to 0 and then call enemy_death
 	{
@@ -133,14 +134,24 @@ void enemy_attack(ENEMY *unit)
 	}
 }
 
-/* WIP
 void main(void)
 {
     set_bkg_data(0, 2, BKG_TILESET);
     set_bkg_tiles(0, 0, 20, 18, BKG_TILEMAP);
+	set_sprite_data(0, 2, SPRITE_TILESET);
 	ENEMY basic;
-	init_enemy(*basic, 1, 1, 1, 1, ENEMY_ATTACK_SELF, 12, 2, 60);
+
+	// Loading self-attacking enemy (two attacks/second) #TODO: MISSING ACTUAL SPRITES TILESET
+	init_enemy(*basic, 1, 1, ENEMY_ATTACK_SELF, 12, 2, 30);
+	display_enemy(*basic,1,72,80);
 	SHOW_BKG;
+	//SPRITES_8x16; Off until final tileset's there
 	SHOW_SPRITES;
+	
+	while(1)
+	{
+		wait_vbl_done(); // Wait screen refresh
+		
+		// Do stuff
+	}
 }
-*/
