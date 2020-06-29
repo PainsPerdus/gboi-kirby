@@ -29,6 +29,11 @@ assets:
 		--sprite8x16 \
 		--name DUMMY_SPRITES \
 		./dummy.png
+	$(IMG2GB) tileset \
+		--output-c-file=src/tileset.c \
+		--output-header-file=src/tileset.h \
+		--name TILESET \
+		./tileset.png
 		
 .PHONY: gbdk-2020
 gbdk-2020:
