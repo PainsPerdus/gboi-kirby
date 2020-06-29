@@ -15,6 +15,7 @@ struct ENEMY {
 	UINT8 health; // monster current HP
 	UINT8 damage; // attack damage - could be manually changed by boosts to enemy shots
 	UINT8 frames_between_attacks; // number of frames between attacks (that is how "attack speed" is controlled)
+	UINT8 frames_until_next_attack; // acts as a counter for the current enemy
 	// Unhandled at this point:
 	// - x/y monster velocity, or whatever way to handle monster speed (to be discussed: how to alter these when a collision occurs? I don't think we want monsters going back and forth along the same straight path all game long)
 	// - projectile speed (if we decide that it depends on the monster rather than, for example, on how far the player got in the game)
@@ -72,13 +73,19 @@ void init_enemy(ENEMY *unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 a
 	unit->health = hp;
 	unit->damage = damage;
 	unit->frames_between_attacks = fba;
+	unit->frames_until_next_attack = fba; // One full cycle before the enemy starts behaving normally. Might want to be able to configure that.
 }
 
-// #TODO: Display enemy unit on-screen, with specified sprite number (0-39), at specified x and y coordinates.
+// (To be tested) Display enemy unit on-screen, with specified sprite number (0-39), at specified x and y coordinates.
 void display_enemy(ENEMY *unit, UINT8 number, UINT8 xpos, UINT ypos)
 {
 	// Initialize left sprite
 	set_sprite_tile(number, unit->enemy_sprite_l);
+	move_sprite(number, xpos, ypos);
+	
+	// Initialize right sprite (#TODO: check whether the number parameter is correctly handled)
+	set_sprite_tile(number+1, unit->enemy_sprite_r);
+	move_sprite(number+1, xpos, ypos+8);
 }
 
 // #TODO: Play death sequence (blinking, presumably), then make the enemy disappear
@@ -103,7 +110,7 @@ void enemy_hp_loss(ENEMY *unit, UINT8 amount)
 	}
 }
 
-// Enemy unit gains specified amount of HP
+// Enemy unit gains specified amount of HP. This is capped to max enemy health.
 void enemy_hp_regen(ENEMY *unit, UINT8 amount)
 {
 	if (unit->health + amount <= unit->max_health) // Gain intended amount
@@ -119,18 +126,21 @@ void enemy_hp_regen(ENEMY *unit, UINT8 amount)
 // Enemy unit launches its attack #TODO: handle MELEE/PROJECTILE
 void enemy_attack(ENEMY *unit)
 {
-	switch (unit->attack_type)
+	if (unit->health) // Check: an enemy can only attack if it has nonzero health
 	{
-		case ENEMY_ATTACK_SELF:
-		enemy_hp_loss(*unit, unit->damage);
-		// Optional: might want to load sound!
-		break;
-		
-		// TODO: handle projectile launch and melee attacks. In the meantime, nothing happens.
-		case ENEMY_ATTACK_MELEE: // TODO: detect whether the player's in melee range, then attack it
-		case ENEMY_ATTACK_PROJECTILE: // can only attack horizontally or vertically
-		default:
-		break;
+		switch (unit->attack_type)
+		{
+			case ENEMY_ATTACK_SELF:
+				enemy_hp_loss(*unit, unit->damage);
+				// Optional: might want to load sound!
+				break;
+			
+			// Todo: handle projectile launch and melee attacks. In the meantime, nothing happens.
+			case ENEMY_ATTACK_MELEE: // #TODO: detect whether the player's in melee range, then attack it
+			case ENEMY_ATTACK_PROJECTILE: // #TODO: can only attack horizontally or vertically
+			default:
+				break;
+		}
 	}
 }
 
@@ -142,16 +152,23 @@ void main(void)
 	ENEMY basic;
 
 	// Loading self-attacking enemy (two attacks/second) #TODO: MISSING ACTUAL SPRITES TILESET
-	init_enemy(*basic, 1, 1, ENEMY_ATTACK_SELF, 12, 2, 30);
+	init_enemy(*basic, 1, 1, ENEMY_ATTACK_SELF, 13, 2, 30);
 	display_enemy(*basic,1,72,80);
 	SHOW_BKG;
-	//SPRITES_8x16; Off until final tileset's there
+	//SPRITES_8x16; // #TODO: Off until I changed to a proper 8x16 tileset
 	SHOW_SPRITES;
 	
 	while(1)
 	{
 		wait_vbl_done(); // Wait screen refresh
 		
-		// Do stuff
+		// Proceed by one frame and check whether the enemy can attack
+		basic.frames_until_next_attack--;
+		if (!frames_until_next_attack)
+		{
+			// Attack and reset frame countdown
+			enemy_attack(*basic);
+			basic.frames_until_next_attack = basic.frames_between_attacks;
+		}
 	}
 }
