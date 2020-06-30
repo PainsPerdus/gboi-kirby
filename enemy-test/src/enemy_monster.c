@@ -14,14 +14,11 @@ void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s
 	unit->damage = damage;
 	unit->frames_between_attacks = frames_between_attacks;
 	unit->frames_until_next_attack = frames_between_attacks; // There is one full cycle before the enemy starts behaving normally. Might want to be able to configure that.
+	unit->dying_animation_state = 0; // Start off alive.
 }
 
 // Display enemy unit on-screen at specified x and y coordinates
-void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
-	// Store current position
-	unit->xpos = xpos;
-	unit->ypos = ypos;
-	
+void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {	
 	// Initialize left sprite
 	set_sprite_tile(unit->sprite_id, unit->enemy_sprite_l);
 	
@@ -36,33 +33,39 @@ void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	// Moves enemy unit to (x,y)
 	move_sprite(unit->sprite_id, xpos + 8, ypos + 16);
 	move_sprite(unit->sprite_id + 1, xpos + 16, ypos + 16);
+	
+	// Store current position unless it's out of range
+	if (xpos < 170 && ypos < 170)
+	{
+		unit->xpos = xpos;
+		unit->ypos = ypos;
+	}
 }
 
-// Play death sequence (blinking), then make the enemy disappear
+// Handles all steps of the enemy death sequence
 void enemy_death(ENEMY* unit) {
-	// Blinking animation - disabled
-	/*
-	UINT8 blinking_cycles = 0;
-	UINT8 cycle_state = 1;
+	switch(unit->dying_animation_state) {
+		case 1: // Make the enemy disappear temporarily
+		case 13:
+		case 25:
+		case 37:
+			move_enemy(unit, 200, 200);
+			break;
+		case 7: // Make the enemy reappear temporarily
+		case 19:
+		case 31:
+		case 43:
+			move_enemy(unit, unit->xpos, unit->ypos); // This will work because move_enemy does not update (x, y) if it's equal to (200, 200)
+			break;
+		case 49: // Enemy disappears, for real this time!
+			move_enemy(unit, 200, 200);
+			// #TODO: release the sprite IDs in the sprite ID pool, once said pool is created
+			break;
+		default:
+			break;
+	}
 	
-	UINT8 former_ypos = unit->ypos; // Retain former y pos for the blinking animation
-	
-	while (blinking_cycles < 10) {	
-		if (cycle_state) { // Disappears
-			move_sprite(unit->sprite_id, unit->xpos, 0);
-			move_sprite(unit->sprite_id+1, unit->xpos+8, 0);
-			cycle_state = 0;
-		} else {
-			move_sprite(unit->sprite_id, unit->xpos, former_ypos);
-			move_sprite(unit->sprite_id+1, unit->xpos+8, former_ypos);
-			cycle_state = 1;
-			blinking_cycles++;
-		}
-	}*/
-	
-	// Enemy disappears
-	move_enemy(unit, 168, 0);
-	// #TODO: release that sprite id in the sprite id pool once said pool is created
+	unit->dying_animation_state++;
 }
 
 // Enemy unit loses specified amount of HP
@@ -72,6 +75,7 @@ void enemy_hp_loss(ENEMY* unit, UINT8 amount) {
 		// Optional: might want to shout "ouch" or something
 	} else { // The unit dies: bring its HP to 0 and then call enemy_death
 		unit->health = 0;
+		unit->dying_animation_state = 1;
 		enemy_death(unit);
 	}
 }
