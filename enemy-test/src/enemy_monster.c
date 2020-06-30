@@ -10,13 +10,15 @@
 typedef struct enemy {
 	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
 	UINT8 enemy_sprite_r; // enemy right sprite
-	UINT8 sprite_id; // sprite ID (0-39)
+	UINT8 sprite_id; // left sprite ID (0-38, even number preferrably)
 	UINT8 attack_type; // enemy attack type, see constants defined above
 	UINT8 max_health; // monster max HP
 	UINT8 health; // monster current HP
 	UINT8 damage; // attack damage - could be manually changed by boosts to enemy shots
 	UINT8 frames_between_attacks; // number of frames between attacks (that is how "attack speed" is controlled)
 	UINT8 frames_until_next_attack; // acts as a counter for the current enemy
+	UINT8 xpos; // current x pos
+	UINT8 ypos; // current y pos
 	// Unhandled at this point:
 	// - x/y monster velocity, or whatever way to handle monster speed (to be discussed: how to alter these when a collision occurs? I don't think we want monsters going back and forth along the same straight path all game long)
 	// - projectile speed (if we decide that it depends on the monster rather than, for example, on how far the player got in the game)
@@ -58,6 +60,10 @@ void init_enemy(ENEMY *unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s
 
 // Display enemy unit on-screen, with specified sprite number (0-39), at specified x and y coordinates.
 void display_enemy(ENEMY *unit, UINT8 xpos, UINT8 ypos) {
+	// Store current position
+	unit->xpos = xpos;
+	unit->ypos = ypos;
+	
 	// Initialize left sprite
 	set_sprite_tile(unit->sprite_id, unit->enemy_sprite_l);
 	move_sprite(unit->sprite_id, xpos, ypos);
@@ -69,26 +75,35 @@ void display_enemy(ENEMY *unit, UINT8 xpos, UINT8 ypos) {
 
 // Play death sequence (blinking, presumably), then make the enemy disappear
 void enemy_death(ENEMY *unit) {
-	// Blinking animation - disabled for now
-	/*
+	// Blinking animation
 	UINT8 blinking_cycles = 0;
 	UINT8 cycle_state = 1;
+	
+	UINT8 former_ypos = unit->ypos; // Retain former y pos for the blinking animation
 	
 	while (blinking_cycles < 10)
 	{
 		wait_vbl_done();
+		wait_vbl_done();
+		wait_vbl_done();
+		wait_vbl_done();
+		wait_vbl_done();
+		wait_vbl_done();
 		
 		if (cycle_state) // Disappears
 		{
-			move_sprite(unit->sprite_id, );
+			move_sprite(unit->sprite_id, unit->xpos, 0);
+			move_sprite(unit->sprite_id+1, unit->xpos+8, 0);
 			cycle_state = 0;
 		}
 		else
 		{
-			move_sprite();
+			move_sprite(unit->sprite_id, unit->xpos, former_ypos);
+			move_sprite(unit->sprite_id+1, unit->xpos+8, former_ypos);
+			cycle_state = 1;
+			blinking_cycles++;
 		}
 	}
-	*/
 	
 	// Enemy disappears
 	move_sprite(unit->sprite_id, 168, 0);
@@ -97,7 +112,7 @@ void enemy_death(ENEMY *unit) {
 
 // Enemy unit loses specified amount of HP
 void enemy_hp_loss(ENEMY *unit, UINT8 amount) {
-	if (amount > unit->health) // The unit survives, so it just loses the specified amount of HP
+	if (amount < unit->health) // The unit survives, so it just loses the specified amount of HP
 	{
 		unit->health -= amount;
 		// Optional: might want to shout "ouch" or something
@@ -148,7 +163,7 @@ void main(void) {
 	ENEMY basic;
 
 	// Loading self-attacking enemy (two attacks/second)
-	init_enemy(&basic, 0, 2, 0, ENEMY_ATTACK_SELF, 13, 2, 30);
+	init_enemy(&basic, 0, 2, 0, ENEMY_ATTACK_SELF, 2, 13, 60);
 	display_enemy(&basic, 72, 80);
 	SHOW_BKG;
 	SPRITES_8x16;
