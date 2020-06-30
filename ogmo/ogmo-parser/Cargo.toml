@@ -1,0 +1,22 @@
+[package]
+name = "ogmo-parser"
+version = "0.1.0"
+authors = ["Yohaï-Eliel BERREBY <yberreby@protonmail.ch>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_json = "1.0.56"
+serde_derive = "1.0.114"
+serde = { version = "1.0.114", features = ["derive"] }
+clap = "2.33.1"
+
+
+# # This is awful, I know.
+# [dependencies.ogmo]
+# git = "https://github.com/PainsPerdus/ogmo-rs.git"
+# branch = "dirty-fix"
+
+# [dependencies.ogmo]
+# path = "/home/yberreby/code/ogmo-rs"
