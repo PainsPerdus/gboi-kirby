@@ -186,7 +186,7 @@ fn main() -> io::Result<()> {
     let output_dir = matches.value_of("OUTPUT_DIR").unwrap_or(".");
     let mut path = PathBuf::new();
     path.push(output_dir);
-    path.set_file_name("chunks");
+    path.push("chunks");
 
     path.set_extension("h");
     fs::write(&path, header(hex_lvls.len()))?;
