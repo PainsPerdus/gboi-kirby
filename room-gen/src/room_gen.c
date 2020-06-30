@@ -4,6 +4,10 @@
 #include "tileset.h"
 #include "room.h"
 
+#include "chunks0.h"
+#include "chunks1.h"
+#include "chunks2.h"
+
 typedef TILE CHUNK[64];
 
 typedef struct {
@@ -21,92 +25,32 @@ UBYTE urand() {
 
 ///// HANDCRAFTED CHUNKS
 
-#define NB_TWO_DOORS_PREFABS 2
-#define NB_ONE_DOOR_PREFABS 2
-#define NB_NO_DOOR_PREFAB 1
+#define NB_TWO_DOORS_PREFABS CHUNK_COUNT2
+#define NB_ONE_DOOR_PREFABS CHUNK_COUNT1
+#define NB_NO_DOOR_PREFAB CHUNK_COUNT0
 
-static const PREFAB PREFABS_TWO_DOORS[NB_TWO_DOORS_PREFABS] = {
-    {  // 0
-        {
-            0,0,0,0,0,0,0,0,
-            2,0,0,0,2,0,0,0,
-            0,0,0,0,0,0,2,0,
-            0,0,0,0,2,0,0,0,
-            0,2,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,
-            0,0,0,2,0,0,0,0,
-            0,0,0,0,0,0,0,0
-        },
-        1, 1, 0, 6
-    },
-    {  // 1
-        {
-            3,3,3,3,3,3,3,0,
-            3,3,3,3,3,3,3,0,
-            3,3,3,3,3,3,3,0,
-            3,3,3,3,3,3,3,0,
-            3,3,0,0,0,0,0,0,
-            3,3,0,2,2,2,0,0,
-            3,3,0,2,2,2,0,0,
-            0,0,0,0,0,0,0,0
-        },
-        1, 1, 1, 31U
+
+static PREFAB buffer;
+
+
+static void get_chunk(const UINT8 chunk_list[][33], UBYTE index, CHUNK output) {
+    for (UINT8 i = 0; i < 32; i++) {
+        buffer.chunk[(i << 1)] = (chunk_list[index][i] >> 4) & 0x03;
+        buffer.chunk[(i << 1) + 1] = chunk_list[index][i] & 0x0F & 0x03;
     }
-};
 
-static const PREFAB PREFABS_ONE_DOOR[NB_ONE_DOOR_PREFABS] = {
-    {  // 2
-        {
-            0,0,0,1,0,0,0,0,
-            0,0,0,0,0,1,0,0,
-            0,0,0,1,0,0,0,0,
-            1,0,1,0,0,1,0,0,
-            0,0,0,0,1,0,0,0,
-            0,1,0,0,0,0,0,0,
-            0,0,0,1,0,0,1,0,
-            1,0,0,0,0,0,0,0
-        },
-        1, 0, 0, 11U
-    },
-    {  // 3
-        {
-            0,0,0,1,0,0,0,0,
-            0,0,0,1,0,0,0,0,
-            2,0,2,1,0,0,0,2,
-            0,0,0,1,0,0,0,0,
-            0,0,1,1,0,2,0,0,
-            0,0,1,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,
-        },
-        1, 0, 1, 11U
-    }
-};
+    UINT8 last = chunk_list[index][32];
+    buffer.top_door_flag = (last & 0x80) != 0;
+    buffer.left_door_flag = (last & 0x40) != 0;
+    buffer.corner = (last & 0x20) != 0;
+    buffer.clutter = last & 0x1F;
 
-static const PREFAB PREFABS_NO_DOOR[NB_NO_DOOR_PREFAB] = {
-    {
-        // 4
-        {
-            0,0,0,0,0,0,0,3,
-            0,0,0,0,0,0,0,3,
-            0,0,0,0,0,0,0,3,
-            0,0,0,0,0,0,0,3,
-            0,0,0,0,0,0,0,3,
-            0,0,0,0,0,0,0,3,
-            0,0,0,0,0,0,0,3,
-            3,3,3,3,3,3,3,3
-        },
-        0, 0, 1, 15U
-    }
-};
-
-static void get_chunk(const PREFAB prefabs[], UBYTE index, CHUNK output) {
-    memcpy(output, prefabs[index].chunk, sizeof(CHUNK));
+    memcpy(output, buffer.chunk, sizeof(CHUNK));
 }
 
 static void get_two_doors_chunk(CHUNK output) {
     UBYTE index = urand() % NB_TWO_DOORS_PREFABS;
-    get_chunk(PREFABS_TWO_DOORS, index, output);
+    get_chunk(CHUNKS2, index, output);
 }
 
 static void get_one_door_chunk(CHUNK output) {
@@ -115,7 +59,7 @@ static void get_one_door_chunk(CHUNK output) {
         get_one_door_chunk(output);
     } else {
         UBYTE index = urand() % NB_ONE_DOOR_PREFABS;
-        get_chunk(PREFABS_ONE_DOOR, index, output);
+        get_chunk(CHUNKS1, index, output);
     }
 }
 
@@ -131,7 +75,7 @@ static void get_no_door_chunk(CHUNK output) {
             break;
         default:
             index = urand() % NB_TWO_DOORS_PREFABS;
-            get_chunk(PREFABS_NO_DOOR, index, output);
+            get_chunk(CHUNKS0, index, output);
             break;
     }
 }
@@ -222,17 +166,22 @@ static void apply_transformation(const UBYTE matrix[], CHUNK input, CHUNK output
     }
 }
 
+
+// used to build the top left chunk. DO NOT REMOVE
+static CHUNK chunk = {0};
+
+// used to build the other chunks. DO NOT REMOVE
+static CHUNK tempo = {0};
+
 static void get_top_left_chunk(BOOLEAN left_door, BOOLEAN top_door, CHUNK output) {
     UBYTE nb_doors = top_door + left_door;
     if (nb_doors == 2) {
-        CHUNK chunk = {0};
         get_two_doors_chunk(chunk);
         if (urand() % 2)
             memcpy(output, chunk, sizeof(CHUNK));
         else
             apply_transformation(TRANSPOSE_MATRIX, chunk, output);
     } else if (nb_doors == 1) {
-        CHUNK chunk = {0};
         get_one_door_chunk(chunk);
         if (top_door)
             memcpy(output, chunk, sizeof(CHUNK));
@@ -240,6 +189,7 @@ static void get_top_left_chunk(BOOLEAN left_door, BOOLEAN top_door, CHUNK output
             apply_transformation(TRANSPOSE_MATRIX, chunk, output);
     }
 }
+
 
 /**
  * @brief Build a top right chunk based on a top left chunk
@@ -249,7 +199,6 @@ static void get_top_left_chunk(BOOLEAN left_door, BOOLEAN top_door, CHUNK output
  * @param output 
  */
 static void get_top_right_chunk(BOOLEAN top_door, BOOLEAN right_door, CHUNK output) {
-    CHUNK tempo = {0};
     get_top_left_chunk(top_door, right_door, tempo);
     apply_transformation(ROT_RIGHT_MATRIX, tempo, output);
 }
@@ -262,7 +211,6 @@ static void get_top_right_chunk(BOOLEAN top_door, BOOLEAN right_door, CHUNK outp
  * @param output 
  */
 static void get_bottom_right_chunk(BOOLEAN right_door, BOOLEAN bottom_door, CHUNK output) {
-    CHUNK tempo = {0};
     get_top_left_chunk(right_door, bottom_door, tempo);
     apply_transformation(ROT_FULL_MATRIX, tempo, output);
 }
@@ -275,7 +223,6 @@ static void get_bottom_right_chunk(BOOLEAN right_door, BOOLEAN bottom_door, CHUN
  * @param output 
  */
 static void get_bottom_left_chunk(BOOLEAN bottom_door, BOOLEAN left_door, CHUNK output) {
-    CHUNK tempo = {0};
     get_top_left_chunk(bottom_door, left_door, tempo);
     apply_transformation(ROT_LEFT_MATRIX, tempo, output);
 }
@@ -291,14 +238,14 @@ static void write_chunk_to_small_room(CHUNK chunk, ROOM* room, UBYTE offset) {
     }
 }
 
+static CHUNK top_left = {0};
+static CHUNK top_right = {0};
+static CHUNK bottom_left = {0};
+static CHUNK bottom_right = {0};
+
 
 void gen_room(ROOM* room) {
     // top-left, top-right, bottom-left, bottom-right
-    CHUNK top_left = {0};
-    CHUNK top_right = {0};
-    CHUNK bottom_left = {0};
-    CHUNK bottom_right = {0};
-
     BOOLEAN left_door = room->doors[DOOR_LEFT].open;
     BOOLEAN top_door = room->doors[DOOR_TOP].open;
     BOOLEAN right_door = room->doors[DOOR_RIGHT].open;
@@ -316,23 +263,24 @@ void gen_room(ROOM* room) {
     write_chunk_to_small_room(bottom_right, room, 136);
 }
 
+static ROOM room = {
+    .doors = {
+        {0, {0, 0, 0}},
+        {1, {1, 1, 1}},
+        {0, {0, 0, 0}},
+        {1, {1, 1, 1}}
+    },
+    .is_small = TRUE,
+    .small_tiles = {EMPTY}
+};
 
 int main(void) {
-    ROOM room = {
-        .doors = {
-            {0, {0, 0, 0}},
-            {1, {1, 1, 1}},
-            {0, {0, 0, 0}},
-            {1, {1, 1, 1}}
-        },
-        .is_small = TRUE,
-        .small_tiles = {EMPTY}
-    };
-
     gen_room(&room);
 
     set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
-    set_bkg_tiles(3, 1, 16, 16, get_room_tiles(&room));
+    CHUNK chunk; 
+    get_chunk(CHUNKS0, 0, chunk);
+    set_bkg_tiles(2, 0, 8, 8, chunk);//get_room_tiles(&room));
 
     SHOW_BKG;
 
