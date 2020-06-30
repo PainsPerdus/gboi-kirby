@@ -3,7 +3,6 @@
 #include "player.sprites.h"
 #include "collision.h"
 #include "tileset.h"
-#include "dash.sprites.h"
 
 #define PLAYER_SPRITE_ID 0
 
@@ -43,7 +42,7 @@ UINT8 player_animation_frame;
 #define MAX_MOVE_X (TILE_SIZE_PX - 1)
 #define MAX_MOVE_Y (TILE_SIZE_PX - 1)
 
-#define COLDOWN_DASH 200            //cooldown of the dash (in number of frame)  (must be < 255)
+static UINT8 cooldown_dash = 200  ;          //cooldown of the dash (in number of frame)  (must be < 255)
 
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
@@ -132,8 +131,11 @@ static UINT8 step1_dash;
 static UINT8 step2_dash;
 static UINT8 step3_dash;
 static UINT8 compteur_dash;
-static UINT8 cooldown = 0;
+static UINT8 cooldown = 255;
+
 static BOOLEAN is_dashing;
+
+
 
 
 
@@ -165,7 +167,7 @@ void read_input() {
       } 
 
       if(keys & J_SELECT){
-        if (cooldown > COLDOWN_DASH){
+        if (cooldown > cooldown_dash){
           player_direction += 36;             //dash tiles = direction tile + 36
           is_dashing = 1;
           compteur_dash = 0;
