@@ -72,12 +72,22 @@ void enemy_death(ENEMY* unit) {
 void enemy_hp_loss(ENEMY* unit, UINT8 amount) {
 	if (amount < unit->health) { // The unit survives, so it just loses the specified amount of HP
 		unit->health -= amount;
-		// Optional: might want to shout "ouch" or something
+		// Optional: might want a sound here
 	} else { // The unit dies: bring its HP to 0 and then call enemy_death
 		unit->health = 0;
+		// Make the death animation triggerable in the main program
 		unit->dying_animation_state = 1;
-		enemy_death(unit);
 	}
+	
+	// Enable palette swap
+	set_sprite_prop(unit->sprite_id, get_sprite_prop(unit->sprite_id) | S_PALETTE);
+	set_sprite_prop(unit->sprite_id + 1, get_sprite_prop(unit->sprite_id + 1) | S_PALETTE);
+	// Wait 1/30th of a second
+	wait_vbl_done();
+	wait_vbl_done();
+	// Swap to default palette
+	set_sprite_prop(unit->sprite_id, get_sprite_prop(unit->sprite_id) & ~S_PALETTE);
+	set_sprite_prop(unit->sprite_id + 1, get_sprite_prop(unit->sprite_id + 1) & ~S_PALETTE);
 }
 
 // Enemy unit gains specified amount of HP. This is capped to max enemy health.
