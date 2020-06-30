@@ -23,9 +23,9 @@ $(PROG).gb: $(_OBJ)
 
 assets:
 	$(IMG2GB) tileset \
-		--output-c-file=src/dummy-tileset.c \
-		--output-header-file=src/dummy-tileset.h \
-		--output-image=src/dummy-tileset.png \
+		--output-c-file=src/dummy.sprites.c \
+		--output-header-file=src/dummy.sprites.h \
+		--output-image=src/dummy.sprites.png \
 		--sprite8x16 \
 		--name DUMMY_SPRITES \
 		./dummy.png
@@ -51,4 +51,5 @@ clean:
 	rm -rf $(PROG).sym
 	rm -rf $(PROG).noi
 	rm -rf $(PROG).lk
-	rm src/dummy-tileset.*
+	rm src/dummy.sprites.*
+	rm src/tileset.*
