@@ -25,17 +25,17 @@ void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	// Initialize right sprite
 	set_sprite_tile(unit->sprite_id + 1, unit->enemy_sprite_r);
 	
-	// Place the sprite
+	// Place the sprites
 	move_enemy(unit, xpos, ypos);
 }
 
 void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	// Moves enemy unit to (x,y)
-	move_sprite(unit->sprite_id, xpos + 8, ypos + 16);
-	move_sprite(unit->sprite_id + 1, xpos + 16, ypos + 16);
+	move_sprite(unit->sprite_id, xpos + X_SPRITE_OFFSET, ypos + Y_SPRITE_OFFSET);
+	move_sprite(unit->sprite_id + 1, xpos + X_SPRITE_OFFSET + 8, ypos + Y_SPRITE_OFFSET);
 	
 	// Store current position unless it's out of range
-	if (xpos < 170 && ypos < 170)
+	if (xpos < X_OFFSCREEN && ypos < Y_OFFSCREEN)
 	{
 		unit->xpos = xpos;
 		unit->ypos = ypos;
@@ -49,7 +49,7 @@ void enemy_death(ENEMY* unit) {
 		case 13:
 		case 25:
 		case 37:
-			move_enemy(unit, 200, 200);
+			move_enemy(unit, X_OFFSCREEN, Y_OFFSCREEN);
 			break;
 		case 7: // Make the enemy reappear temporarily
 		case 19:
@@ -58,7 +58,7 @@ void enemy_death(ENEMY* unit) {
 			move_enemy(unit, unit->xpos, unit->ypos); // This will work because move_enemy does not update (x, y) if it's equal to (200, 200)
 			break;
 		case 49: // Enemy disappears, for real this time!
-			move_enemy(unit, 200, 200);
+			move_enemy(unit, X_OFFSCREEN, Y_OFFSCREEN);
 			// #TODO: release the sprite IDs in the sprite ID pool, once said pool is created
 			break;
 		default:

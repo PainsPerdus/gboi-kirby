@@ -8,6 +8,13 @@
 #define ENEMY_ATTACK_SELF 2 // used for testing purposes
 #define ENEMY_ATTACK_INNOCENT 3
 
+// sprite placement offset
+#define X_SPRITE_OFFSET 8
+#define Y_SPRITE_OFFSET 16
+
+#define X_OFFSCREEN 240
+#define Y_OFFSCREEN 240
+
 typedef struct enemy {
 	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
 	UINT8 enemy_sprite_r; // enemy right sprite
