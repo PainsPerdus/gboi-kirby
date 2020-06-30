@@ -31,6 +31,13 @@ assets:
 		--name PLAYER_SPRITES \
 		./piney.png
 	$(IMG2GB) tileset \
+		--output-c-file=src/chainsaw.sprites.c \
+		--output-header-file=src/chainsaw.sprites.h \
+		--output-image=src/chainsaw.sprites.png \
+		--sprite8x16 \
+		--name CHAINSAW_SPRITES \
+		./chainsaw.png
+	$(IMG2GB) tileset \
 		--output-c-file=src/tileset.c \
 		--output-header-file=src/tileset.h \
 		--name TILESET \

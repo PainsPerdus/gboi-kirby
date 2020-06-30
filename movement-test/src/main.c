@@ -3,7 +3,7 @@
 #include "player.sprites.h"
 #include "collision.h"
 #include "tileset.h"
-#include "tronconneuse.sprites.h"
+#include "chainsaw.sprites.h"
 
 #define PLAYER_SPRITE_ID 0
 
@@ -188,6 +188,7 @@ void read_input() {
 void init_graphics() {
     // Load sprites' tiles in video memory
     set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
+    set_sprite_data(PLAYER_SPRITES_TILE_COUNT, CHAINSAW_SPRITES_TILE_COUNT, CHAINSAW_SPRITES);
     // Use 8x16 sprites
     SPRITES_8x16;
     // Makes sprites "layer" visible
