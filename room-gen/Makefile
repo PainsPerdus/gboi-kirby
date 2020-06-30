@@ -21,6 +21,9 @@ all: $(BINS)
 %.o:	%.s
 	$(CC) -c -o $@ $<
 
+debug: $(wildcard src/*.c)
+	$(CC) -S $^
+
 $(PROG).gb:	$(OBJ)
 	$(CC) -o $(PROG).gb $^
 
@@ -32,9 +35,9 @@ assets: tileset.png
     	./tileset.png
 
 chunks: 
-	$(CHUNK_MAKER) ../ogmo/chunks/zero 0 ./src/ 
-	$(CHUNK_MAKER) ../ogmo/chunks/zero 1 ./src/
-	$(CHUNK_MAKER) ../ogmo/chunks/zero 2 ./src/
+	$(CHUNK_MAKER) ../ogmo/chunks/zero 0 ./src
+	$(CHUNK_MAKER) ../ogmo/chunks/zero 1 ./src
+	$(CHUNK_MAKER) ../ogmo/chunks/zero 2 ./src
 
 clean:
 	rm -rf src/*.o	
@@ -42,3 +45,5 @@ clean:
 	rm -rf src/*.sym
 	rm -rf $(PROG).map
 	rm -rf $(PROG).sym
+	rm -rf src/chunks*
+	rm -rf *.asm
