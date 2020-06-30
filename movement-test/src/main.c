@@ -3,6 +3,7 @@
 #include "player.sprites.h"
 #include "collision.h"
 #include "tileset.h"
+#include "tronconneuse.sprites.h"
 
 #define PLAYER_SPRITE_ID 0
 

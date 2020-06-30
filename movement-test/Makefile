@@ -31,6 +31,13 @@ assets:
 		--name PLAYER_SPRITES \
 		./piney.png
 	$(IMG2GB) tileset \
+		--output-c-file=src/tronconneuse.sprites.c \
+		--output-header-file=src/tronconneuse.sprites.h \
+		--output-image=src/tronconneuse.sprites.png \
+		--sprite8x16 \
+		--name TRONCONNEUSE_SPRITES \
+		./tronconneuse.png
+	$(IMG2GB) tileset \
 		--output-c-file=src/tileset.c \
 		--output-header-file=src/tileset.h \
 		--name TILESET \
