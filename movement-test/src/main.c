@@ -88,7 +88,8 @@ UINT8 update_sprite_animation(UINT8 sprite_id, UINT8 *anim, UINT8 direction, UIN
     return (frame + 1) % len;
 }
 
-const UINT8 TILEMAP[18*18] = {
+UINT8 TILEMAP[2][18*18] = {
+  {
     4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
     4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
     4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
@@ -107,6 +108,27 @@ const UINT8 TILEMAP[18*18] = {
     4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
     4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
     4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+  },
+  {
+    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+  }
 };
 
 static UINT8 effective_x;
@@ -136,6 +158,32 @@ static UINT8 cooldown = 255;
 static BOOLEAN is_dashing;
 
 
+static RECTANGLE left_door_hitbox = {{0, 64}, {7, 16}};
+static RECTANGLE right_door_hitbox = {{17 * 8 + 1, 64}, {7, 16}};
+
+
+static UINT8 room_number = 0;
+
+
+void load_tilemap() {
+    set_bkg_tiles(2, 0, 18, 18, TILEMAP[room_number]);
+}
+
+
+void open_doors() {
+  UINT8 change[2] = {0, 0};
+  if (room_number == 0) {
+    TILEMAP[room_number][8 * 18] = 0;
+    TILEMAP[room_number][9 * 18] = 0;
+    //set_bkg_tiles(2, 8, 1, 2, change);
+    
+  //} else if (room_number == 1) {
+    TILEMAP[1][9 * 18 - 1] = 0;
+    TILEMAP[1][10 * 18 - 1] = 0;
+    //set_bkg_tiles(19, 8, 1, 2, change);
+  }
+  load_tilemap();
+}
 
 
 
@@ -183,7 +231,6 @@ void read_input() {
 }
 
 
-
 void init_graphics() {
     // Load sprites' tiles in video memory
     set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
@@ -193,8 +240,7 @@ void init_graphics() {
     SHOW_SPRITES;
 
     set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
-
-    set_bkg_tiles(2, 0, 18, 18, TILEMAP);
+    load_tilemap();
     SHOW_BKG;
 
     // https://gbdev.gg8.se/wiki/articles/GBDK_set_sprite_prop
@@ -314,7 +360,7 @@ void handle_collisions() {
 
         INT16 k = block_y * (ROOM_WIDTH + 2) + block_x;
 
-        if (TILEMAP[k] != 0) {
+        if (TILEMAP[room_number][k] != 0) {
           block.pos.x = block_x << 3;
           block.pos.y = block_y << 3;
 
@@ -345,7 +391,7 @@ void handle_collisions() {
 
         INT16 k = block_y * (ROOM_WIDTH + 2) + block_x;
 
-        if (TILEMAP[k] != 0) {
+        if (TILEMAP[room_number][k] != 0) {
           block.pos.x = block_x << 3;
           block.pos.y = block_y << 3;
 
@@ -362,6 +408,18 @@ void handle_collisions() {
     player.pos.x = new_player.pos.x;
     player.pos.y = new_player.pos.y;
 
+    if (rect_rect_collision(&player, &left_door_hitbox)) {
+      room_number = 1;
+      load_tilemap();
+      player.pos.x = 16 * 8;
+      return;
+    } else if (rect_rect_collision(&player, &right_door_hitbox)) {
+      room_number = 0;
+      load_tilemap();
+      player.pos.x = 8;
+      return;
+    }
+
   }
 }
 
@@ -372,12 +430,13 @@ void init_dash_state() {
 
 }
 
-
 void main(void) {
     init_player_state();
     init_dash_state();
 
     init_graphics();
+
+    open_doors();
 
     while (1) {
         // Wait for v-blank (screen refresh)
@@ -388,7 +447,6 @@ void main(void) {
         handle_dash();
 
         handle_collisions();
-
 
         // Do NOT move this near update_sprite_animation...
         move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
