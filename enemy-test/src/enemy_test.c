@@ -51,7 +51,6 @@ void main(void) {
 			
 			// Attack and reset frame countdown
 			enemy_attack(&basic);
-			basic.frames_until_next_attack = basic.frames_between_attacks;
 		}
 	}
 }

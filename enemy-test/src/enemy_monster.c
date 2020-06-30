@@ -24,71 +24,58 @@ void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	
 	// Initialize left sprite
 	set_sprite_tile(unit->sprite_id, unit->enemy_sprite_l);
-	move_sprite(unit->sprite_id, xpos, ypos);
+	move_sprite(unit->sprite_id, xpos - 8, ypos - 16);
 	
 	// Initialize right sprite
 	set_sprite_tile(unit->sprite_id + 1, unit->enemy_sprite_r);
-	move_sprite(unit->sprite_id + 1, xpos + 8, ypos);
+	move_sprite(unit->sprite_id + 1, xpos, ypos - 16);
 }
 
 // Play death sequence (blinking), then make the enemy disappear
 void enemy_death(ENEMY* unit) {
-	// Blinking animation
+	// Blinking animation - disabled
+	/*
 	UINT8 blinking_cycles = 0;
 	UINT8 cycle_state = 1;
 	
 	UINT8 former_ypos = unit->ypos; // Retain former y pos for the blinking animation
 	
-	while (blinking_cycles < 10)
-	{
-		wait_vbl_done();
-		wait_vbl_done();
-		wait_vbl_done();
-		wait_vbl_done();
-		wait_vbl_done();
-		wait_vbl_done();
-		
-		if (cycle_state) // Disappears
-		{
+	while (blinking_cycles < 10) {	
+		if (cycle_state) { // Disappears
 			move_sprite(unit->sprite_id, unit->xpos, 0);
 			move_sprite(unit->sprite_id+1, unit->xpos+8, 0);
 			cycle_state = 0;
-		}
-		else
-		{
+		} else {
 			move_sprite(unit->sprite_id, unit->xpos, former_ypos);
 			move_sprite(unit->sprite_id+1, unit->xpos+8, former_ypos);
 			cycle_state = 1;
 			blinking_cycles++;
 		}
-	}
+	}*/
 	
 	// Enemy disappears
 	move_sprite(unit->sprite_id, 168, 0);
 	move_sprite(unit->sprite_id + 1, 168, 0);
+	// #TODO: release that sprite id in the sprite id pool
 }
 
 // Enemy unit loses specified amount of HP
 void enemy_hp_loss(ENEMY* unit, UINT8 amount) {
-	if (amount < unit->health) // The unit survives, so it just loses the specified amount of HP
-	{
+	if (amount < unit->health) { // The unit survives, so it just loses the specified amount of HP
 		unit->health -= amount;
 		// Optional: might want to shout "ouch" or something
-	}
-	else // The unit dies: bring its HP to 0 and then call enemy_death
-	{
+	} else { // The unit dies: bring its HP to 0 and then call enemy_death
 		unit->health = 0;
 		enemy_death(unit);
 	}
 }
 
-// Enemy unit gains specified amount of HP. This is capped to max enemy health. (To be tested.)
+// Enemy unit gains specified amount of HP. This is capped to max enemy health.
 void enemy_hp_regen(ENEMY* unit, UINT8 amount) {
 	if (unit->health) { // Do not heal a dead enemy
 		if (unit->health + amount <= unit->max_health) { // Gain intended amount
 			unit->health += amount;
-		}
-		else { // Cap it to max health 
+		} else { // Cap it to max health 
 			unit->health = unit->max_health;
 		}
 	}
@@ -110,5 +97,8 @@ void enemy_attack(ENEMY* unit) {
 			default:
 				break;
 		}
+		
+		// Reset frame counter until next attack
+		unit->frames_until_next_attack = unit->frames_between_attacks;
 	}
 }
