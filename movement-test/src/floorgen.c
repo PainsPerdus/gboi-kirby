@@ -1,5 +1,8 @@
 #include <gb/gb.h>
 #include <rand.h>
+#include "floorgen.h"
+#include "global.h"
+#include "room_gen.h"
 
 /**
  * @brief Describe all possible room operations
@@ -9,8 +12,6 @@
  * - ADD_BOSS = add a boss room
  */
 typedef enum {NOP, ADD_ROOM, ADD_BOSS} OPERATIONS;
-
-typedef enum {UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3} DIR;
 
 static const DIR INV_DIR_TABLE[4] = {DOWN, UP, RIGHT, LEFT};
 #define INV_DIR(x) INV_DIR_TABLE[(x)]
@@ -190,7 +191,7 @@ static UINT8 add_dir_to_pos(DIR dir, INT8 pos) {
 /**
  * @brief Reset everything and begin another room generation
  */
-static void init() {
+static void init_floorgen() {
     // reset everything
     build_list_ptr = 0;
 
@@ -219,7 +220,10 @@ static void init() {
 }
 
 void gen_floor() {
-    init();
+    // reset everything and add the root room
+    init_floorgen();
+
+    // build rooms
     while (build_list_ptr < nb_rooms) {
         // Step 1: find an expandable room
         UINT8 room_ptr = get_expandable_room();
@@ -269,9 +273,27 @@ void gen_floor() {
 
         push_room();
     }
-}
 
-UINT8 main(void) {
-    gen_floor();
-    return 0;
+    // convert graph to rooms
+    base_floor.nb_rooms = build_list_ptr;
+    for (UINT8 i = 0; i < build_list_ptr; i++) {
+        base_floor.rooms[i].is_small = TRUE;
+        for (UINT8 j = 0; j < 4; j++) {
+            if (built[i].neighbours_ptr[j].is_null) {
+                base_floor.rooms[i].doors[j].keys[0] = 1;
+                base_floor.rooms[i].doors[j].keys[1] = 1;
+                base_floor.rooms[i].doors[j].keys[2] = 1;
+                base_floor.rooms[i].doors[j].room_ptr = 0;
+                base_floor.rooms[i].doors[j].is_open = FALSE;
+            } else {
+                base_floor.rooms[i].doors[j].keys[0] = 0;
+                base_floor.rooms[i].doors[j].keys[1] = 0;
+                base_floor.rooms[i].doors[j].keys[2] = 0;
+                base_floor.rooms[i].doors[j].room_ptr = built[i].neighbours_ptr[j].ptr;
+                base_floor.rooms[i].doors[j].is_open = TRUE;
+            }
+        }
+        gen_room(&base_floor.rooms[i]);
+    }
+
 }
