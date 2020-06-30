@@ -7,8 +7,13 @@
 #include "global.h"
 #include <string.h>
 #include "floorgen.h"
+#include "chainsaw_lateral.sprites.h"
 
 #define PLAYER_SPRITE_ID 0
+#define CHAINSAW_TOP_LATERAL_SPRITE_ID (PLAYER_SPRITE_ID + PLAYER_SPRITES_TILE_COUNT)
+#define CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID (CHAINSAW_TOP_LATERAL_SPRITE_ID + 2)
+#define CHAINSAW_WOOSH_2_LATERAL_SPRITE_ID (CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID + 2)
+
 
 // Animations data for the player's sprite
 static UINT8 PLAYER_SPRITE_ANIM[] = {
@@ -135,11 +140,21 @@ static UINT8 step1_dash;
 static UINT8 step2_dash;
 static UINT8 step3_dash;
 static UINT8 compteur_dash;
-static UINT8 cooldown = 255;
+static UINT8 cooldown = 70;
 
 static BOOLEAN is_dashing;
 
 static RECTANGLE door_hitboxes[4];
+
+static UINT8 sawchain_frame_counter = 150;
+
+static UINT8 sawchain_cooldown = 100;
+
+static UINT8 sawchain_relativ_x;
+static UINT8 sawchain_relativ_y;
+static UINT8 sawchain_animation_length = 18;
+static UINT8 sawchain_animation_part1 = 6;
+static UINT8 sawchain_animation_part2 = 12;
 
 static UINT8 room_number = 0;
 
@@ -280,20 +295,29 @@ void read_input() {
           is_dashing = 1;
           compteur_dash = 0;
 
-
-          dx = dx + dx;
+ 
+          dx = dx + dx;                     //to decoment if you want a faster dash
           dy = dy + dy;
           }
-
       }
+      
     }
+    if(keys & J_A){
+        if (sawchain_frame_counter > sawchain_cooldown){
+          sawchain_frame_counter = 0;
+        }
+      }
 
 }
 
 
 void init_graphics() {
     // Load sprites' tiles in video memory
-    set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
+    set_sprite_data(PLAYER_SPRITE_ID, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
+    set_sprite_data(PLAYER_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES);
+
+
+
     // Use 8x16 sprites
     SPRITES_8x16;
     // Makes sprites "layer" visible
@@ -348,17 +372,17 @@ void handle_dash() {
   // If the player is dashing, he can't control his movement anymore
   // after x iterations of the dashing code, we set is_dashing to 0 and that ends the dash
   if (is_dashing) {
-    longueur_dash = 12;
-    step1_dash = 4;
-    step2_dash = 7;
-    step3_dash = 9;
+    longueur_dash = 20;
+    step1_dash = 5;
+    step2_dash = 10;
+    step3_dash = 15;
 
     // The length of the dash is reduced if the movement is diagonal.
     if (dx != 0 && dy != 0){
-      longueur_dash = 8;
-      step1_dash = 2;
-      step2_dash = 4;
-      step3_dash = 6;
+      longueur_dash = 18;
+      step1_dash = 4;
+      step2_dash = 9;
+      step3_dash = 15;
     }
 
     // End the dash if enough distance has been travelled.
@@ -373,8 +397,8 @@ void handle_dash() {
       dy = dy + dy;
     }
     if (compteur_dash == step2_dash){
-      dx = dx + dx;
-      dy = dy + dy;
+      //dx = dx + dx;
+      //dy = dy + dy;
     }
     if (compteur_dash == step3_dash){
       // The caracter slows down at the end of the dash
@@ -389,6 +413,70 @@ void handle_dash() {
     compteur_dash += 1;
   }
 }
+
+void handle_sawchain() {
+  if (sawchain_frame_counter < 250){                //to counter overflow
+    sawchain_frame_counter += 1;
+  }
+  if (sawchain_frame_counter < sawchain_animation_part1){ //sawchain part 1
+    if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
+      sawchain_relativ_x = 10;
+      sawchain_relativ_y = 5;
+      flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+    }
+    if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
+      sawchain_relativ_x = 250;
+      sawchain_relativ_y = 5;
+      unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+    }   
+       
+    
+    set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID);
+  }
+  if (sawchain_frame_counter > sawchain_animation_part1){    //wwoosh 
+    if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
+      sawchain_relativ_x = 248;
+      sawchain_relativ_y = 252;
+      flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID +1);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 4);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
+    }
+    if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
+      sawchain_relativ_x = 0;
+      sawchain_relativ_y = 250 ;
+      unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID +1);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 4);
+    }      
+     
+  }
+  if (sawchain_frame_counter > sawchain_animation_part2){
+    if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
+      sawchain_relativ_x = 241;
+      sawchain_relativ_y = 3;
+      flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 8);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 6);
+    }
+    if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
+      sawchain_relativ_x = 7;
+      sawchain_relativ_y = 3;
+      unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 6);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 8);
+    }            //sawchain hiting
+
+  }
+  if (sawchain_frame_counter > sawchain_animation_length){
+    set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);
+    set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);       //put back blank in second sprite of the woosh
+  } 
+  
+}
+
+
 
 void handle_collisions() {
   VEC_DIFF diff = {0, 0};
@@ -480,6 +568,13 @@ void init_dash_state() {
 
 }
 
+void init_sawchain_state() {
+
+    is_dashing = 0;
+    compteur_dash = 0;
+
+}
+
 
 void main(void) {
     gen_floor();
@@ -489,7 +584,7 @@ void main(void) {
 
     init_player_state();
     init_dash_state();
-
+    init_sawchain_state();
     init_graphics();
 
     while (1) {
@@ -500,10 +595,14 @@ void main(void) {
 
         handle_dash();
 
+        handle_sawchain();
+
         handle_collisions();
 
         // Do NOT move this near update_sprite_animation...
         move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
+        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x + sawchain_relativ_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y + sawchain_relativ_y);
+        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, player.pos.x + SPRITE_OFFSET_X + scroll_x + sawchain_relativ_x + 8, player.pos.y + SPRITE_OFFSET_Y + scroll_y + sawchain_relativ_y);      //for the 16*16 sainwhaw animation
 
         // We do not update the animation on each frame: the animation
         // will be too quick. So we skip frames
