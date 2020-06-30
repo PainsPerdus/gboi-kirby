@@ -37,6 +37,13 @@ static UINT8 clutter_budget = 0;
 #define MAX_CLUTTER_BUDGET 20
 
 
+/**
+ * @brief Decompress chunklist[index]
+ * 
+ * @param chunk_list 
+ * @param index 
+ * @param output 
+ */
 static void get_chunk(const UINT8 chunk_list[][33], UBYTE index, CHUNK output) {
     for (UINT8 i = 0; i < 32; i++) {
         UINT8 tile1 = (chunk_list[index][i] >> 4);
@@ -51,20 +58,38 @@ static void get_chunk(const UINT8 chunk_list[][33], UBYTE index, CHUNK output) {
     buffer.corner = (last & 0x20) != 0;
     buffer.clutter = last & 0x1F;
 
+    clutter_budget -= buffer.clutter;
+
     memcpy(output, buffer.chunk, sizeof(CHUNK));
 }
 
+/**
+ * @brief Find the most expensive chunk and return its index + 1
+ * 
+ * @param chunk_list 
+ * @param len 
+ * @return UINT8 
+ */
+static UINT8 find_affordable(const UINT8 chunk_list[][33], UINT8 len) {
+    for (UINT8 i = len - 1; i > 0; i--) {
+        if ((chunk_list[i][32] & 0x1F) <= clutter_budget)
+            return i + 1;
+    }
+    return 1;
+}
+
 static void get_two_doors_chunk(CHUNK output) {
-    UBYTE index = urand() % NB_TWO_DOORS_PREFABS;
+    UINT8 price = find_affordable(CHUNKS2, NB_TWO_DOORS_PREFABS);
+    UBYTE index = urand() % price;
     get_chunk(CHUNKS2, index, output);
 }
 
 static void get_one_door_chunk(CHUNK output) {
-    BOOLEAN two_doors = urand() % 2;
+    BOOLEAN two_doors = urand() & 1U;
     if (two_doors) {
         get_two_doors_chunk(output);
     } else {
-        UBYTE index = urand() % NB_ONE_DOOR_PREFABS;
+        UBYTE index = urand() % find_affordable(CHUNKS1, NB_ONE_DOOR_PREFABS);
         get_chunk(CHUNKS1, index, output);
     }
 }
@@ -80,7 +105,7 @@ static void get_no_door_chunk(CHUNK output) {
             get_one_door_chunk(output);
             break;
         default:
-            index = urand() % NB_TWO_DOORS_PREFABS;
+            index = urand() % find_affordable(CHUNKS0, NB_NO_DOOR_PREFAB);
             get_chunk(CHUNKS0, index, output);
             break;
     }
@@ -257,6 +282,7 @@ static CHUNK bottom_right = {0};
 
 
 #define HAS_DOOR(r,d) ((r)->doors[(d)].keys[0] + (r)->doors[(d)].keys[1] + (r)->doors[(d)].keys[2]) < 3
+
 
 void gen_room(ROOM* room) {
     clutter_budget = MAX_CLUTTER_BUDGET;
