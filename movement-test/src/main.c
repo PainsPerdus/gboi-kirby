@@ -3,6 +3,7 @@
 #include "player.sprites.h"
 #include "collision.h"
 #include "tileset.h"
+#include "dash.sprites.h"
 
 #define PLAYER_SPRITE_ID 0
 
@@ -13,6 +14,10 @@ UINT8 PLAYER_SPRITE_ANIM[] = {
    4,    0, 0, 1, 1,     4, 6,  4,   6,   // Up
    4,    0, 0, 0, 0,     8, 10, 8, 10,   // Right
    4,    1, 1, 1, 1,     8, 10, 8, 10,   // Left
+   4,    0, 0, 0, 0,     16, 16, 16, 16,   // dash down
+   4,    0, 0, 0, 0,     12, 12, 12, 12,   // dash up
+   4,    0, 0, 0, 0,     14, 14, 14, 14,   // right
+   4,    1, 1, 1, 1,     14, 14, 14, 14,   // Left
 };
 
 // Offset of the animation of each direction in the global animation data
@@ -20,6 +25,10 @@ UINT8 PLAYER_SPRITE_ANIM[] = {
 #define PLAYER_DIRECTION_UP    9
 #define PLAYER_DIRECTION_RIGHT 18
 #define PLAYER_DIRECTION_LEFT  27
+#define PLAYER_DASH_DIRECTION_DOWN 36
+#define PLAYER_DASH_DIRECTION_UP 45
+#define PLAYER_DASH_DIRECTION_RIGHT 54
+#define PLAYER_DASH_DIRECTION_LEFT 63
 
 // Variables containing player state
 RECTANGLE player;
@@ -33,6 +42,8 @@ UINT8 player_animation_frame;
 #define TILE_SIZE_PX 8
 #define MAX_MOVE_X (TILE_SIZE_PX - 1)
 #define MAX_MOVE_Y (TILE_SIZE_PX - 1)
+
+#define COLDOWN_DASH 200            //cooldown of the dash (in number of frame)  (must be < 255)
 
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
@@ -121,16 +132,22 @@ static UINT8 step1_dash;
 static UINT8 step2_dash;
 static UINT8 step3_dash;
 static UINT8 compteur_dash;
+static UINT8 cooldown = 0;
 static BOOLEAN is_dashing;
 
 
 
 
 void read_input() {
+    
     // Read joypad keys to know if the player is walking
     // and in which direction
     keys = joypad();
     if (!is_dashing) {
+      if (cooldown < 250){
+          cooldown += 1;
+      }
+      
       dx = 0;
       dy = 0; 
       if (keys & J_UP) {
@@ -148,12 +165,16 @@ void read_input() {
       } 
 
       if(keys & J_SELECT){
-        is_dashing = 1;
-        compteur_dash = 0;
+        if (cooldown > COLDOWN_DASH){
+          player_direction += 36;             //dash tiles = direction tile + 36
+          is_dashing = 1;
+          compteur_dash = 0;
 
-        // The speed of the dash is set here (2x normal speed).
-        dx = dx + dx;
-        dy = dy + dy;
+          
+          dx = dx + dx;
+          dy = dy + dy;
+          }
+        
       }
     } 
 
@@ -167,10 +188,10 @@ void init_graphics() {
     // Use 8x16 sprites
     SPRITES_8x16;
     // Makes sprites "layer" visible
-    SHOW_SPRITES;
-
+    SHOW_SPRITES; 
 
     set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
+
     set_bkg_tiles(2, 0, 18, 18, TILEMAP);
     SHOW_BKG;
 
@@ -235,6 +256,7 @@ void handle_dash() {
     // End the dash if enough distance has been travelled.
     if (compteur_dash == longueur_dash) {
       is_dashing = 0;
+      cooldown = 0;
     }
 
     // The speed increases during the dash
@@ -342,8 +364,10 @@ void handle_collisions() {
 }
 
 void init_dash_state() {
+
     is_dashing = 0;
     compteur_dash = 0;
+    
 }
 
 
