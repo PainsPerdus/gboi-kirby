@@ -33,10 +33,16 @@ UBYTE urand() {
 static PREFAB buffer;
 
 
+static UINT8 clutter_budget = 0;
+#define MAX_CLUTTER_BUDGET 20
+
+
 static void get_chunk(const UINT8 chunk_list[][33], UBYTE index, CHUNK output) {
     for (UINT8 i = 0; i < 32; i++) {
-        buffer.chunk[(i << 1)] = (chunk_list[index][i] >> 4) & 0x03;
-        buffer.chunk[(i << 1) + 1] = chunk_list[index][i] & 0x0F & 0x03;
+        UINT8 tile1 = (chunk_list[index][i] >> 4);
+        UINT8 tile2 = chunk_list[index][i] & 0x0F;
+        buffer.chunk[(i << 1)] = tile1 < 10 ? tile1 : 0;
+        buffer.chunk[(i << 1) + 1] = tile2 < 10 ? tile2 : 0;
     }
 
     UINT8 last = chunk_list[index][32];
@@ -56,7 +62,7 @@ static void get_two_doors_chunk(CHUNK output) {
 static void get_one_door_chunk(CHUNK output) {
     BOOLEAN two_doors = urand() % 2;
     if (two_doors) {
-        get_one_door_chunk(output);
+        get_two_doors_chunk(output);
     } else {
         UBYTE index = urand() % NB_ONE_DOOR_PREFABS;
         get_chunk(CHUNKS1, index, output);
@@ -174,7 +180,7 @@ static CHUNK chunk = {0};
 static CHUNK tempo = {0};
 
 static void get_top_left_chunk(BOOLEAN left_door, BOOLEAN top_door, CHUNK output) {
-    UBYTE nb_doors = top_door + left_door;
+    UBYTE nb_doors = left_door + top_door;
     if (nb_doors == 2) {
         get_two_doors_chunk(chunk);
         if (urand() % 2)
@@ -186,6 +192,12 @@ static void get_top_left_chunk(BOOLEAN left_door, BOOLEAN top_door, CHUNK output
         if (top_door)
             memcpy(output, chunk, sizeof(CHUNK));
         else   // left_door == true
+            apply_transformation(TRANSPOSE_MATRIX, chunk, output);
+    } else {
+        get_no_door_chunk(chunk);
+        if (urand() % 2)
+            memcpy(output, chunk, sizeof(CHUNK));
+        else
             apply_transformation(TRANSPOSE_MATRIX, chunk, output);
     }
 }
@@ -244,12 +256,16 @@ static CHUNK bottom_left = {0};
 static CHUNK bottom_right = {0};
 
 
+#define HAS_DOOR(r,d) ((r)->doors[(d)].keys[0] + (r)->doors[(d)].keys[1] + (r)->doors[(d)].keys[2]) < 3
+
 void gen_room(ROOM* room) {
+    clutter_budget = MAX_CLUTTER_BUDGET;
+
     // top-left, top-right, bottom-left, bottom-right
-    BOOLEAN left_door = room->doors[DOOR_LEFT].open;
-    BOOLEAN top_door = room->doors[DOOR_TOP].open;
-    BOOLEAN right_door = room->doors[DOOR_RIGHT].open;
-    BOOLEAN bottom_door = room->doors[DOOR_BOTTOM].open;
+    BOOLEAN left_door = HAS_DOOR(room, DOOR_LEFT);
+    BOOLEAN top_door = HAS_DOOR(room, DOOR_TOP);
+    BOOLEAN right_door = HAS_DOOR(room, DOOR_RIGHT);
+    BOOLEAN bottom_door = HAS_DOOR(room, DOOR_BOTTOM);
 
     get_top_left_chunk(left_door, top_door, top_left);
     get_top_right_chunk(top_door, right_door, top_right);
@@ -265,24 +281,51 @@ void gen_room(ROOM* room) {
 
 static ROOM room = {
     .doors = {
-        {0, {0, 0, 0}},
-        {1, {1, 1, 1}},
-        {0, {0, 0, 0}},
-        {1, {1, 1, 1}}
+        {0, {1, 1, 1}},
+        {0, {1, 1, 1}},
+        {0, {1, 1, 1}},
+        {0, {1, 1, 1}}
     },
     .is_small = TRUE,
     .small_tiles = {EMPTY}
 };
 
+static TILE background_filler[18*18] = {
+    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+};
+
 int main(void) {
-    gen_room(&room);
+    initrand(42);
 
     set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
-    CHUNK chunk; 
-    get_chunk(CHUNKS0, 0, chunk);
-    set_bkg_tiles(2, 0, 8, 8, chunk);//get_room_tiles(&room));
+    set_bkg_tiles(2, 0, 18, 18, background_filler);
 
     SHOW_BKG;
+
+    while (1) {
+        waitpad(J_LEFT);
+        waitpadup();
+        gen_room(&room);
+        set_bkg_tiles(3, 1, 16, 16, get_room_tiles(&room));
+    }
+
 
     return 0;
 }
