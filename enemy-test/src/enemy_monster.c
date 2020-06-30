@@ -24,11 +24,18 @@ void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	
 	// Initialize left sprite
 	set_sprite_tile(unit->sprite_id, unit->enemy_sprite_l);
-	move_sprite(unit->sprite_id, xpos - 8, ypos - 16);
 	
 	// Initialize right sprite
 	set_sprite_tile(unit->sprite_id + 1, unit->enemy_sprite_r);
-	move_sprite(unit->sprite_id + 1, xpos, ypos - 16);
+	
+	// Place the sprite
+	move_enemy(unit, xpos, ypos);
+}
+
+void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
+	// Moves enemy unit to (x,y)
+	move_sprite(unit->sprite_id, xpos + 8, ypos + 16);
+	move_sprite(unit->sprite_id + 1, xpos + 16, ypos + 16);
 }
 
 // Play death sequence (blinking), then make the enemy disappear
@@ -54,9 +61,8 @@ void enemy_death(ENEMY* unit) {
 	}*/
 	
 	// Enemy disappears
-	move_sprite(unit->sprite_id, 168, 0);
-	move_sprite(unit->sprite_id + 1, 168, 0);
-	// #TODO: release that sprite id in the sprite id pool
+	move_enemy(unit, 168, 0);
+	// #TODO: release that sprite id in the sprite id pool once said pool is created
 }
 
 // Enemy unit loses specified amount of HP
