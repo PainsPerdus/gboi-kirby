@@ -4,6 +4,8 @@
 #include "collision.h"
 #include "tileset.h"
 #include "sound_effect.h"
+#include "global.h"
+#include <string.h>
 
 #define PLAYER_SPRITE_ID 0
 
@@ -89,25 +91,25 @@ UINT8 update_sprite_animation(UINT8 sprite_id, UINT8 *anim, UINT8 direction, UIN
     return (frame + 1) % len;
 }
 
-const UINT8 TILEMAP[18*18] = {
-    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
-    4,0,0,0,1,0,0,0,0,0,0,0,1,1,1,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+UINT8 TILEMAP[18*18] = {
+  4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
+  4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 };
 
 static UINT8 effective_x;
@@ -136,7 +138,44 @@ static UINT8 cooldown = 255;
 
 static BOOLEAN is_dashing;
 
+static RECTANGLE door_hitboxes[4];
 
+static UINT8 room_number = 0;
+
+
+void load_tilemap() {
+    set_bkg_tiles(2, 0, 18, 18, TILEMAP);
+}
+
+static const UINT16 door_positions_small[8] = {8, 9, 17*18+8, 17*18+9, 8*18, 9*18, 9*18-1, 10*18-1};
+static const UINT16 door_positions_big[8] = {13, 14, 25*26+13, 25*26+14, 13*26, 14*26, 14*26-1, 15*26-1};
+
+static const UINT8 open_door_tiles[2] = {0, 0};
+static const UINT8 close_door_tiles[2] = {4, 4};
+
+void reset_doors() {
+  ROOM* room = &base_floor.rooms[room_number];
+  for (UINT8 i = 0; i < 4; i++) {
+    BOOLEAN open = (room->doors[i].is_open);
+    UINT16 door_pos1 = room->is_small ? door_positions_small[(i << 1)] : door_positions_big[(i << 1)];
+    UINT16 door_pos2 = room->is_small ? door_positions_small[(i << 1) + 1] : door_positions_big[(i << 1) + 1];
+    TILEMAP[door_pos1] = open ? 0 : 4;
+    TILEMAP[door_pos2] = open ? 0 : 4;
+    UINT8 size = (room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE) + 2;
+
+    UINT8 x = (door_pos1 % size);
+    UINT8 y = door_pos1 / size;
+    UINT8 w = (i < 2) ? 2 : 1;  // i < 2 <=> i = UP or DOWN
+    UINT8 h = (i < 2) ? 1 : 2;
+
+    door_hitboxes[i].pos.x = x << 3;
+    door_hitboxes[i].pos.y = y << 3;
+    door_hitboxes[i].size.w = w << 3;
+    door_hitboxes[i].size.h = h << 3;
+
+    set_bkg_tiles(x + 2, y, w, h, open ? open_door_tiles : close_door_tiles);
+  }
+}
 
 
 
@@ -188,7 +227,6 @@ void read_input() {
 }
 
 
-
 void init_graphics() {
     // Load sprites' tiles in video memory
     set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
@@ -198,8 +236,7 @@ void init_graphics() {
     SHOW_SPRITES;
 
     set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
-
-    set_bkg_tiles(2, 0, 18, 18, TILEMAP);
+    load_tilemap();
     SHOW_BKG;
 
     // https://gbdev.gg8.se/wiki/articles/GBDK_set_sprite_prop
@@ -290,6 +327,56 @@ void handle_dash() {
 }
 
 
+void load_room() {
+  UINT8 size = base_floor.rooms[room_number].is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;
+  for (UINT8 i = 0; i < size; i++) {
+    TILE* tilemap_ptr = TILEMAP + ((size+2) + 1 + i*(size+2));
+    TILE* room_ptr = base_floor.rooms[room_number].small_tiles + (i * size);
+    memcpy(tilemap_ptr, room_ptr, size);
+  }
+}
+
+
+void check_doors() {
+  ROOM* room = &base_floor.rooms[room_number];
+
+  for (UINT8 i = 0; i < 4; i++) {
+    if (rect_rect_collision(&player, &door_hitboxes[i])) {
+      room_number = room->doors[i].room_ptr;
+      load_room();
+      load_tilemap();
+      reset_doors();
+      
+      room = &base_floor.rooms[room_number];
+      UINT8 size = room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;  
+
+      switch (i) {
+        case LEFT: 
+          player.pos.x = (size - 2) << 3;
+          player.pos.y = size << 2;
+          break;
+        
+        case RIGHT:
+          player.pos.x = 8;
+          player.pos.y = size << 2;
+          break;
+
+        case UP:
+          player.pos.x = size << 2;
+          player.pos.y = 8;
+          break;
+
+        case DOWN:
+          player.pos.x = size << 2;
+          player.pos.y = (size - 2) << 3;
+          break;
+      }
+      return;
+    } 
+  }
+}
+
+
 void handle_collisions() {
   VEC_DIFF diff = {0, 0};
 
@@ -370,6 +457,7 @@ void handle_collisions() {
     player.pos.x = new_player.pos.x;
     player.pos.y = new_player.pos.y;
 
+    check_doors();
   }
 }
 
@@ -381,7 +469,23 @@ void init_dash_state() {
 }
 
 
+void fake_room_loading() {
+    base_floor.nb_rooms = 2;
+    base_floor.rooms[0].is_small = TRUE;
+    memcpy(base_floor.rooms[0].doors, doors1, sizeof(doors1));
+    memcpy(base_floor.rooms[0].small_tiles, room1_tilemap, sizeof(room1_tilemap));
+    base_floor.rooms[1].is_small = TRUE;
+    memcpy(base_floor.rooms[1].doors, doors2, sizeof(doors2));
+    memcpy(base_floor.rooms[1].small_tiles, room2_tilemap, sizeof(room2_tilemap));
+}
+
+
 void main(void) {
+    fake_room_loading();
+
+    load_room();
+    reset_doors();
+
     init_player_state();
     init_dash_state();
 
@@ -396,7 +500,6 @@ void main(void) {
         handle_dash();
 
         handle_collisions();
-
 
         // Do NOT move this near update_sprite_animation...
         move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
