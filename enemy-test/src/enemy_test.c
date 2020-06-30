@@ -33,7 +33,7 @@ void main(void) {
 	ENEMY basic;
 
 	// Loading self-attacking enemy (two attacks/second)
-	init_enemy(&basic, 0, 2, 0, ENEMY_ATTACK_SELF, 2, 8, 60);
+	init_enemy(&basic, 0, 2, 0, ENEMY_ATTACK_SELF, 2, 8, 30);
 	display_enemy(&basic, 72, 80);
 	
 	SHOW_BKG;
@@ -43,14 +43,20 @@ void main(void) {
 	while(1) {
 		wait_vbl_done(); // Wait screen refresh
 		
-		// Proceed by one frame and check whether the enemy can attack
-		basic.frames_until_next_attack--;
-		if (!basic.frames_until_next_attack) {
-			// For testing purposes: regenerate 1 HP before each self-attack, while alive.
-			enemy_hp_regen(&basic, 1);
+		// Proceed by one frame and check whether the enemy can attack.
+		// If there are several enemies, the following is to be done with EACH enemy that is alive.
+		if (!basic.dying_animation_state) { // Enemy is alive
+			basic.frames_until_next_attack--;
+			if (!basic.frames_until_next_attack) {
+				// For testing purposes: regenerate 1 HP before each self-attack, while alive.
+				enemy_hp_regen(&basic, 1);
 			
-			// Attack and reset frame countdown
-			enemy_attack(&basic);
+				// Attack and reset frame countdown
+				enemy_attack(&basic);
+			}
+		} else if (basic.dying_animation_state < 50) {
+			// Enemy about to die: play death animation.
+			enemy_death(&basic);
 		}
 	}
 }

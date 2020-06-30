@@ -18,6 +18,7 @@ typedef struct enemy {
 	UINT8 damage; // attack damage - could be manually changed by boosts to enemy shots
 	UINT8 frames_between_attacks; // number of frames between attacks (that is how "attack speed" is controlled)
 	UINT8 frames_until_next_attack; // acts as a counter for the current enemy
+	UINT8 dying_animation_state; // INTERNAL. 0: enemy alive, 1-49: death animation, above: dead.
 	UINT8 xpos; // current x pos
 	UINT8 ypos; // current y pos
 	// Unhandled at this point:
@@ -58,7 +59,7 @@ void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos);
 void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos);
 
 /**
- * @brief Plays death sequence (blinking), then makes the enemy disappear
+ * @brief Handles enemy death sequence: death animation and actual death
  *
  * @param unit
  */
