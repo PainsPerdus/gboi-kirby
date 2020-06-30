@@ -1,10 +1,14 @@
 CC = ../gbdk-2020/build/gbdk/bin/lcc -Wa-l -Wl-m -Wl-j
 
+CHUNK_MAKER = cargo run --manifest-path ../ogmo/ogmo-parser/Cargo.toml 
+
 PROG = room-gen
 
 IMG2GB = img2gb
 OBJ =  $(patsubst %.c,%.o,$(wildcard src/*.c))
 BINS = room-gen.gb
+
+
 
 all: $(BINS)
 
@@ -26,6 +30,11 @@ assets: tileset.png
     	--output-header-file=src/tileset.h \
     	--deduplicate \
     	./tileset.png
+
+chunks: 
+	$(CHUNK_MAKER) ../ogmo/chunks/zero 0 ./src/ 
+	$(CHUNK_MAKER) ../ogmo/chunks/zero 1 ./src/
+	$(CHUNK_MAKER) ../ogmo/chunks/zero 2 ./src/
 
 clean:
 	rm -rf src/*.o	
