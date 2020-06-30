@@ -6,6 +6,10 @@
 #include "chainsaw_lateral.sprites.h"
 
 #define PLAYER_SPRITE_ID 0
+#define CHAINSAW_TOP_LATERAL_SPRITE_ID (PLAYER_SPRITE_ID + PLAYER_SPRITES_TILE_COUNT)
+#define CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID (CHAINSAW_TOP_LATERAL_SPRITE_ID + 2)
+#define CHAINSAW_WOOSH_2_LATERAL_SPRITE_ID (CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID + 2)
+
 
 // Animations data for the player's sprite
 UINT8 PLAYER_SPRITE_ANIM[] = {
@@ -185,10 +189,14 @@ void read_input() {
 
 
 
+
 void init_graphics() {
     // Load sprites' tiles in video memory
-    set_sprite_data(0, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
+    set_sprite_data(PLAYER_SPRITE_ID, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
     set_sprite_data(PLAYER_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES);
+
+
+
     // Use 8x16 sprites
     SPRITES_8x16;
     // Makes sprites "layer" visible
