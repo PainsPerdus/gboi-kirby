@@ -1,52 +1,10 @@
 #include <gb/gb.h>
 
-#include "tileset.h"
-#include "dummy-tileset.h"
-
-#define ENEMY_ATTACK_PROJECTILE 0
-#define ENEMY_ATTACK_MELEE 1
-#define ENEMY_ATTACK_SELF 2 // used for teting purposes
-
-typedef struct enemy {
-	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
-	UINT8 enemy_sprite_r; // enemy right sprite
-	UINT8 sprite_id; // left sprite ID (0-38, even number preferrably)
-	UINT8 attack_type; // enemy attack type, see constants defined above
-	UINT8 max_health; // monster max HP
-	UINT8 health; // monster current HP
-	UINT8 damage; // attack damage - could be manually changed by boosts to enemy shots
-	UINT8 frames_between_attacks; // number of frames between attacks (that is how "attack speed" is controlled)
-	UINT8 frames_until_next_attack; // acts as a counter for the current enemy
-	UINT8 xpos; // current x pos
-	UINT8 ypos; // current y pos
-	// Unhandled at this point:
-	// - x/y monster velocity, or whatever way to handle monster speed (to be discussed: how to alter these when a collision occurs? I don't think we want monsters going back and forth along the same straight path all game long)
-	// - projectile speed (if we decide that it depends on the monster rather than, for example, on how far the player got in the game)
-} ENEMY;
-
-const UINT8 TILEMAP[18*18] = {
-    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,
-    4,0,0,0,1,0,0,0,0,0,0,0,1,1,1,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-};
+#include "enemy_monster.h"
+#include "dummy.sprites.h"
 
 // Initialize an enemy unit
-void init_enemy(ENEMY *unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s_id, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 fba) {
+void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s_id, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 frames_between_attacks) {
 	unit->enemy_sprite_l = enemy_sprite_l;
 	unit->enemy_sprite_r = enemy_sprite_r;
 	unit->sprite_id = s_id;
@@ -54,12 +12,12 @@ void init_enemy(ENEMY *unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s
 	unit->max_health = hp;
 	unit->health = hp; // Enemies always start full HP.
 	unit->damage = damage;
-	unit->frames_between_attacks = fba;
-	unit->frames_until_next_attack = fba; // There is one full cycle before the enemy starts behaving normally. Might want to be able to configure that.
+	unit->frames_between_attacks = frames_between_attacks;
+	unit->frames_until_next_attack = frames_between_attacks; // There is one full cycle before the enemy starts behaving normally. Might want to be able to configure that.
 }
 
-// Display enemy unit on-screen, with specified sprite number (0-39), at specified x and y coordinates.
-void display_enemy(ENEMY *unit, UINT8 xpos, UINT8 ypos) {
+// Display enemy unit on-screen at specified x and y coordinates
+void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	// Store current position
 	unit->xpos = xpos;
 	unit->ypos = ypos;
@@ -73,8 +31,8 @@ void display_enemy(ENEMY *unit, UINT8 xpos, UINT8 ypos) {
 	move_sprite(unit->sprite_id + 1, xpos + 8, ypos);
 }
 
-// Play death sequence (blinking, presumably), then make the enemy disappear
-void enemy_death(ENEMY *unit) {
+// Play death sequence (blinking), then make the enemy disappear
+void enemy_death(ENEMY* unit) {
 	// Blinking animation
 	UINT8 blinking_cycles = 0;
 	UINT8 cycle_state = 1;
@@ -111,7 +69,7 @@ void enemy_death(ENEMY *unit) {
 }
 
 // Enemy unit loses specified amount of HP
-void enemy_hp_loss(ENEMY *unit, UINT8 amount) {
+void enemy_hp_loss(ENEMY* unit, UINT8 amount) {
 	if (amount < unit->health) // The unit survives, so it just loses the specified amount of HP
 	{
 		unit->health -= amount;
@@ -125,23 +83,21 @@ void enemy_hp_loss(ENEMY *unit, UINT8 amount) {
 }
 
 // Enemy unit gains specified amount of HP. This is capped to max enemy health. (To be tested.)
-void enemy_hp_regen(ENEMY *unit, UINT8 amount) {
-	if (unit->health + amount <= unit->max_health) // Gain intended amount
-	{
-		unit->health += amount;
-	}
-	else
-	{
-		unit->health = unit->max_health;
+void enemy_hp_regen(ENEMY* unit, UINT8 amount) {
+	if (unit->health) { // Do not heal a dead enemy
+		if (unit->health + amount <= unit->max_health) { // Gain intended amount
+			unit->health += amount;
+		}
+		else { // Cap it to max health 
+			unit->health = unit->max_health;
+		}
 	}
 }
 
 // Enemy unit launches its attack #TODO: handle MELEE/PROJECTILE
-void enemy_attack(ENEMY *unit) {
-	if (unit->health) // Check: an enemy can only attack if it has nonzero health
-	{
-		switch (unit->attack_type)
-		{
+void enemy_attack(ENEMY* unit) {
+	if (unit->health) { // Check: an enemy can only attack if it has nonzero health
+		switch (unit->attack_type) {
 			case ENEMY_ATTACK_SELF:
 				enemy_hp_loss(unit, unit->damage);
 				// Optional: might want to load sound!
@@ -150,34 +106,9 @@ void enemy_attack(ENEMY *unit) {
 			// Todo: handle projectile launch and melee attacks. In the meantime, nothing happens.
 			case ENEMY_ATTACK_MELEE: // #TODO: detect whether the player's in melee range, then attack it
 			case ENEMY_ATTACK_PROJECTILE: // #TODO: can only attack horizontally or vertically
+			case ENEMY_ATTACK_INNOCENT:
 			default:
 				break;
-		}
-	}
-}
-
-void main(void) {
-    set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
-    set_bkg_tiles(2, 0, 18, 18, TILEMAP);
-	set_sprite_data(0, 4, DUMMY_SPRITES);
-	ENEMY basic;
-
-	// Loading self-attacking enemy (two attacks/second)
-	init_enemy(&basic, 0, 2, 0, ENEMY_ATTACK_SELF, 2, 13, 60);
-	display_enemy(&basic, 72, 80);
-	SHOW_BKG;
-	SPRITES_8x16;
-	SHOW_SPRITES;
-	
-	while(1) {
-		wait_vbl_done(); // Wait screen refresh
-		
-		// Proceed by one frame and check whether the enemy can attack
-		basic.frames_until_next_attack--;
-		if (!basic.frames_until_next_attack) {
-			// Attack and reset frame countdown
-			enemy_attack(&basic);
-			basic.frames_until_next_attack = basic.frames_between_attacks;
 		}
 	}
 }
