@@ -36,8 +36,8 @@ assets: tileset.png
 
 chunks: 
 	$(CHUNK_MAKER) ../ogmo/chunks/zero 0 ./src
-	$(CHUNK_MAKER) ../ogmo/chunks/zero 1 ./src
-	$(CHUNK_MAKER) ../ogmo/chunks/zero 2 ./src
+	$(CHUNK_MAKER) ../ogmo/chunks/one 1 ./src
+	$(CHUNK_MAKER) ../ogmo/chunks/two 2 ./src
 
 clean:
 	rm -rf src/*.o	
