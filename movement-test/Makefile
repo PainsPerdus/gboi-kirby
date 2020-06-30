@@ -5,8 +5,10 @@ export SDCCDIR=/usr  # might not work for everyone
 GBDK_2020 = ../gbdk-2020/
 CC = $(GBDK_2020)/build/gbdk/bin/lcc -Wa-l -Wl-m -Wl-j
 IMG2GB = img2gb
+CHUNK_MAKER = cargo run --manifest-path ../ogmo/ogmo-parser/Cargo.toml 
 
-_OBJ = $(patsubst %.c,%.o,$(wildcard src/*.c))
+
+_OBJ =  $(patsubst %.c,%.o,$(wildcard src/*.c))
 
 
 all: build
@@ -36,6 +38,11 @@ assets:
 		--name TILESET \
 		./tileset.png
 
+chunks: 
+	$(CHUNK_MAKER) ../ogmo/chunks/zero 0 ./src
+	$(CHUNK_MAKER) ../ogmo/chunks/one 1 ./src
+	$(CHUNK_MAKER) ../ogmo/chunks/two 2 ./src
+
 .PHONY: gbdk-2020
 gbdk-2020:
 	cd $(GBDK_2020) && make
@@ -54,3 +61,4 @@ clean:
 	rm -rf $(PROG).lk
 	rm src/player.sprites.*
 	rm src/tileset.*
+	rm src/chunks*

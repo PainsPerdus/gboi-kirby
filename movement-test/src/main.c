@@ -6,11 +6,12 @@
 #include "sound_effect.h"
 #include "global.h"
 #include <string.h>
+#include "floorgen.h"
 
 #define PLAYER_SPRITE_ID 0
 
 // Animations data for the player's sprite
-UINT8 PLAYER_SPRITE_ANIM[] = {
+static UINT8 PLAYER_SPRITE_ANIM[] = {
 // LEN   FLIP            TILES ID         DIRECTION
    4,    0, 0, 1, 1,     0, 2,  0,  2,           // Down
    4,    0, 0, 1, 1,     4, 6,  4,   6,   // Up
@@ -33,10 +34,10 @@ UINT8 PLAYER_SPRITE_ANIM[] = {
 #define PLAYER_DASH_DIRECTION_LEFT 63
 
 // Variables containing player state
-RECTANGLE player;
-RECTANGLE new_player;
-UINT8 player_direction;
-UINT8 player_animation_frame;
+static RECTANGLE player;
+static RECTANGLE new_player;
+static UINT8 player_direction;
+static UINT8 player_animation_frame;
 
 #define SPRITE_OFFSET_X 8
 #define SPRITE_OFFSET_Y 8  // note: set at 8 even though sprites are 8px tall because of the perspective
@@ -50,8 +51,8 @@ static UINT8 cooldown_dash = 200  ;          //cooldown of the dash (in number o
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
 
-INT8 scroll_x = 16;  // initial offset because of the UI
-INT8 scroll_y = 0;
+static INT8 scroll_x = 16;  // initial offset because of the UI
+static INT8 scroll_y = 0;
 
 // Flip the given sprite on X axis.
 //
@@ -142,7 +143,14 @@ static RECTANGLE door_hitboxes[4];
 
 static UINT8 room_number = 0;
 
+FLOOR base_floor;
 
+
+
+/**
+ * @brief Replace the background layer with TILEMAP
+ * WON't WORK FOR BIG ROOMS
+ */
 void load_tilemap() {
     set_bkg_tiles(2, 0, 18, 18, TILEMAP);
 }
@@ -153,6 +161,11 @@ static const UINT16 door_positions_big[8] = {13, 14, 25*26+13, 25*26+14, 13*26, 
 static const UINT8 open_door_tiles[2] = {0, 0};
 static const UINT8 close_door_tiles[2] = {4, 4};
 
+/**
+ * @brief Replace door tiles
+ * 
+ * Call this when doors have been opened / closed
+ */
 void reset_doors() {
   ROOM* room = &base_floor.rooms[room_number];
   for (UINT8 i = 0; i < 4; i++) {
@@ -177,11 +190,62 @@ void reset_doors() {
   }
 }
 
+/**
+ * @brief Replace the currently loaded room in TILEMAP with base_floor.rooms[room_number]
+ */
+void load_room() {
+  UINT8 size = base_floor.rooms[room_number].is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;
+  for (UINT8 i = 0; i < size; i++) {
+    TILE* tilemap_ptr = TILEMAP + ((size+2) + 1 + i*(size+2));
+    TILE* room_ptr = base_floor.rooms[room_number].small_tiles + (i * size);
+    memcpy(tilemap_ptr, room_ptr, size);
+  }
+}
 
+/**
+ * @brief Check whether the player should leave the room or not
+ */
+void check_doors() {
+  ROOM* room = &base_floor.rooms[room_number];
+
+  for (UINT8 i = 0; i < 4; i++) {
+    if (rect_rect_collision(&player, &door_hitboxes[i])) {
+      room_number = room->doors[i].room_ptr;
+      load_room();
+      load_tilemap();
+      reset_doors();
+      
+      room = &base_floor.rooms[room_number];
+      UINT8 size = room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;  
+
+      switch (i) {
+        case LEFT: 
+          player.pos.x = (size - 2) << 3;
+          player.pos.y = size << 2;
+          break;
+        
+        case RIGHT:
+          player.pos.x = 8;
+          player.pos.y = size << 2;
+          break;
+
+        case UP:
+          player.pos.x = size << 2;
+          player.pos.y = (size - 2) << 3;
+          break;
+
+        case DOWN:
+          player.pos.x = size << 2;
+          player.pos.y = 8;
+          break;
+      }
+      return;
+    } 
+  }
+}
 
 
 void read_input() {
-
     // Read joypad keys to know if the player is walking
     // and in which direction
     keys = joypad();
@@ -326,57 +390,6 @@ void handle_dash() {
   }
 }
 
-
-void load_room() {
-  UINT8 size = base_floor.rooms[room_number].is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;
-  for (UINT8 i = 0; i < size; i++) {
-    TILE* tilemap_ptr = TILEMAP + ((size+2) + 1 + i*(size+2));
-    TILE* room_ptr = base_floor.rooms[room_number].small_tiles + (i * size);
-    memcpy(tilemap_ptr, room_ptr, size);
-  }
-}
-
-
-void check_doors() {
-  ROOM* room = &base_floor.rooms[room_number];
-
-  for (UINT8 i = 0; i < 4; i++) {
-    if (rect_rect_collision(&player, &door_hitboxes[i])) {
-      room_number = room->doors[i].room_ptr;
-      load_room();
-      load_tilemap();
-      reset_doors();
-      
-      room = &base_floor.rooms[room_number];
-      UINT8 size = room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;  
-
-      switch (i) {
-        case LEFT: 
-          player.pos.x = (size - 2) << 3;
-          player.pos.y = size << 2;
-          break;
-        
-        case RIGHT:
-          player.pos.x = 8;
-          player.pos.y = size << 2;
-          break;
-
-        case UP:
-          player.pos.x = size << 2;
-          player.pos.y = 8;
-          break;
-
-        case DOWN:
-          player.pos.x = size << 2;
-          player.pos.y = (size - 2) << 3;
-          break;
-      }
-      return;
-    } 
-  }
-}
-
-
 void handle_collisions() {
   VEC_DIFF diff = {0, 0};
 
@@ -462,26 +475,14 @@ void handle_collisions() {
 }
 
 void init_dash_state() {
-
     is_dashing = 0;
     compteur_dash = 0;
 
 }
 
 
-void fake_room_loading() {
-    base_floor.nb_rooms = 2;
-    base_floor.rooms[0].is_small = TRUE;
-    memcpy(base_floor.rooms[0].doors, doors1, sizeof(doors1));
-    memcpy(base_floor.rooms[0].small_tiles, room1_tilemap, sizeof(room1_tilemap));
-    base_floor.rooms[1].is_small = TRUE;
-    memcpy(base_floor.rooms[1].doors, doors2, sizeof(doors2));
-    memcpy(base_floor.rooms[1].small_tiles, room2_tilemap, sizeof(room2_tilemap));
-}
-
-
 void main(void) {
-    fake_room_loading();
+    gen_floor();
 
     load_room();
     reset_doors();
