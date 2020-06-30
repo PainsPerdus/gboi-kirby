@@ -3,6 +3,7 @@
 #include "player.sprites.h"
 #include "collision.h"
 #include "tileset.h"
+#include "sound_effect.h"
 
 #define PLAYER_SPRITE_ID 0
 
@@ -155,15 +156,19 @@ void read_input() {
       if (keys & J_UP) {
           player_direction = PLAYER_DIRECTION_UP;
           dy -= 1;
+	      // play_falling_sound();
       } if (keys & J_DOWN) {
           player_direction = PLAYER_DIRECTION_DOWN;
           dy += 1;
+	      // play_hit_sound();
       } if (keys & J_LEFT) {
           player_direction = PLAYER_DIRECTION_LEFT;
           dx -= 1;
+	      // play_dash_sound();
       } if (keys & J_RIGHT) {
           player_direction = PLAYER_DIRECTION_RIGHT;
           dx += 1;
+	      // play_chainsaw_attack_sound();
       }
 
       if(keys & J_B){
@@ -286,6 +291,8 @@ void handle_dash() {
 
 
 void handle_collisions() {
+  VEC_DIFF diff = {0, 0};
+
   total_diff.dx = dx;
   total_diff.dy = dy;
 
@@ -319,7 +326,6 @@ void handle_collisions() {
           block.pos.y = block_y << 3;
 
           if (rect_rect_collision(&new_player, &block)) {
-            VEC_DIFF diff = {0, 0};
             rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
             new_player.pos.x += diff.dx;
             total_diff.dx = 0;
@@ -350,7 +356,9 @@ void handle_collisions() {
           block.pos.y = block_y << 3;
 
           if (rect_rect_collision(&new_player, &block)) {
-            VEC_DIFF diff = {0, 0};
+            // This will not play immediately, but keep running against a wall
+            // under Sameboy and your ears will explode. Trust me.
+            //play_hit_sound();
             rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
             new_player.pos.y += diff.dy;
             total_diff.dy = 0;
