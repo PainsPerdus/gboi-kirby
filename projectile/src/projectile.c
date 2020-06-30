@@ -48,7 +48,7 @@ void projectile_travel(PROJECTILE* p) {
 				scroll_sprite(p->sprite_id, -1, 0);
 				p->xpos -= 1;
 				break;
-			default: // Stand still
+			default: // Projectile won't move
 				break;
 		}
 		
