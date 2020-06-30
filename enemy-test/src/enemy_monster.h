@@ -49,6 +49,15 @@ void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s
 void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos);
 
 /**
+ * @brief Moves an enemy unit to specified x and y coordinates
+ *
+ * @param unit
+ * @param xpos
+ * @param ypos
+ */
+void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos);
+
+/**
  * @brief Plays death sequence (blinking), then makes the enemy disappear
  *
  * @param unit
