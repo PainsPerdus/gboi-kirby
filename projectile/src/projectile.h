@@ -23,7 +23,8 @@ typedef struct projectile {
 	UINT8 firing_direction; // see FIRING_DIRECTION_* macros
 	UINT8 xpos;
 	UINT8 ypos;
-	UINT8 velocity; // projectile movement speed in pixels per frame
+	UINT8 travel_freq; // projectile movement speed: frames between travelling steps
+	UINT8 delay_until_next_travel; // current frames remaining until next step
 	UINT8 targets; // see TARGET_* macros
 	UINT8 damage; // damage the projectile should do. This will depend on the unit firing it.
 } PROJECTILE;
@@ -36,12 +37,12 @@ typedef struct projectile {
  * @param s_tile projectile tile
  * @param targets
  * @param damage
- * @param velocity
+ * @param travel_freq travelling frequency
  */
-void projectile_init(PROJECTILE* p, UINT8 s_id, UINT8 s_tile, UINT8 targets, UINT8 damage, UINT8 velocity);
+void projectile_init(PROJECTILE* p, UINT8 s_id, UINT8 s_tile, UINT8 targets, UINT8 damage, UINT8 travel_freq);
 
 /**
- * @brief Place projectile at specified (x,y) coordinates, and define its direction (see FIRING_DIRECTION_* macros)
+ * @brief Places projectile at specified (x,y) coordinates, and define its direction (see FIRING_DIRECTION_* macros)
  *
  * @param p
  * @param xpos
@@ -49,4 +50,11 @@ void projectile_init(PROJECTILE* p, UINT8 s_id, UINT8 s_tile, UINT8 targets, UIN
  * @param direction see FIRING_DIRECTION_* macros
  */
 void projectile_display(PROJECTILE* p, UINT8 xpos, UINT8 ypos, UINT8 direction);
+
+/**
+ * @brief Moves projectile by "velocity" pixels
+ *
+ * @param p
+ */
+void projectile_travel(PROJECTILE* p);
 #endif
