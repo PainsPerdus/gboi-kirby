@@ -273,10 +273,10 @@ void handle_dash() {
 
     // The length of the dash is reduced if the movement is diagonal.
     if (dx != 0 && dy != 0){
-      longueur_dash = 27;
-      step1_dash = 8;
-      step2_dash = 4;
-      step3_dash = 6;
+      longueur_dash = 18;
+      step1_dash = 4;
+      step2_dash = 9;
+      step3_dash = 15;
     }
 
     // End the dash if enough distance has been travelled.
