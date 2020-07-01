@@ -109,6 +109,13 @@ void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos);
 void enemy_death(ENEMY* unit);
 
 /**
+ * @brief Remove an enemy from the game.
+ *
+ * @param unit
+ */
+void enemy_release(ENEMY* unit);
+
+/**
  * @brief Enemy unit loses specified amount of HP
  *
  * @param unit

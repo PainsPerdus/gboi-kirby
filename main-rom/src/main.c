@@ -206,6 +206,17 @@ void load_room() {
   }
 }
 
+void load_enemies() {
+  for (UINT8 i = 0; i < enemy_stack_ptr; i++) 
+    enemy_release(&enemy_stack[i]);
+  enemy_stack_ptr = 0;
+  spawn_enemies(room_number);
+
+  for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
+    display_enemy(&enemy_stack[i], enemy_stack[i].xpos, enemy_stack[i].ypos);
+  }
+}
+
 /**
  * @brief Check whether the player should leave the room or not
  */
@@ -218,7 +229,8 @@ void check_doors() {
       load_room();
       load_tilemap();
       reset_doors();
-
+      load_enemies();
+      
       room = &base_floor.rooms[room_number];
       UINT8 size = room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;
 
@@ -637,13 +649,7 @@ void main(void) {
     load_room();
     reset_doors();
 
-    spawn_enemies(room_number);
-
-
-    for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
-      handle_enemy_walk(&enemy_stack[i]);
-      display_enemy(&enemy_stack[i], enemy_stack[i].xpos, enemy_stack[i].ypos);
-    }
+    load_enemies();
 
     init_player_state();
     init_dash_state();

@@ -86,9 +86,7 @@ void enemy_death(ENEMY* unit) {
 			move_enemy(unit, unit->xpos, unit->ypos); // This will work because move_enemy does not update (x, y) if it's equal to (200, 200)
 			break;
 		case 49: // Enemy disappears, for real this time!
-			move_enemy(unit, X_OFFSCREEN, Y_OFFSCREEN);
-			free_oam_id(unit->sprite_id1);
-			free_oam_id(unit->sprite_id2);
+			enemy_release(unit);
 
 			break;
 		default:
@@ -97,6 +95,13 @@ void enemy_death(ENEMY* unit) {
 	
 	if (unit->dying_animation_state < 49)
 		unit->dying_animation_state++;
+}
+
+
+void enemy_release(ENEMY* unit) {
+	move_enemy(unit, X_OFFSCREEN, Y_OFFSCREEN);
+	free_oam_id(unit->sprite_id1);
+	free_oam_id(unit->sprite_id2);
 }
 
 // Enemy unit loses specified amount of HP
