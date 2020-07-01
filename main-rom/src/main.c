@@ -695,55 +695,55 @@ void main(void) {
     init_dash_state();
     init_chainsaw_state();
     init_graphics();
-
-	// Loading self-attacking enemy (two attacks/second)
-	ENEMY basic;
-	init_enemy(&basic, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, 1, ENEMY_ATTACK_NONE, 2, 8, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
-	display_enemy(&basic, 72, 80);
+	
+    // Loading self-attacking enemy (two attacks/second)
+    ENEMY basic;
+    init_enemy(&basic, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, 1, ENEMY_ATTACK_NONE, 2, 8, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
+    display_enemy(&basic, 72, 80);
 
     while (1) {
-        // Wait for v-blank (screen refresh)
-        wait_vbl_done();
+      // Wait for v-blank (screen refresh)
+      wait_vbl_done();
 
-        read_input();
+      read_input();
 
-        handle_dash();
+      handle_dash();
 
-        handle_chainsaw();
+      handle_chainsaw();
 
-        handle_collisions();
+      handle_collisions();
 
-        // Do NOT move this near update_sprite_animation...
-        move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
+      // Do NOT move this near update_sprite_animation...
+      move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
 
-        // Some saw assets are 16x16 and therefore require two side-by-side 8x16 sprites.
-        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);
-        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x + 8, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 chainsaw animation
+      // Some saw assets are 16x16 and therefore require two side-by-side 8x16 sprites.
+      move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);
+      move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x + 8, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 chainsaw animation
 
-        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+2,offset_chainsaw + player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x,16+ player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 sainwhaw animation
+      move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+2,offset_chainsaw + player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x,16+ player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 sainwhaw animation
 
-        // We do not update the animation on each frame: the animation
-        // will be too quick. So we skip frames
-        frame_skip -= 1;
-        if (!frame_skip) {
-          frame_skip = 8;
-        } else {
-          continue;
-        }
+      // We do not update the animation on each frame: the animation
+      // will be too quick. So we skip frames
+      frame_skip -= 1;
+      if (!frame_skip) {
+        frame_skip = 8;
+      } else {
+        continue;
+      }
 
-        // XXX: this is not necessarily the right condition, but oh well.
-        if (dx == 0 && dy == 0){
-            player_animation_frame = 0;
-        }
+      // XXX: this is not necessarily the right condition, but oh well.
+      if (dx == 0 && dy == 0){
+          player_animation_frame = 0;
+      }
 
 
-        // Update sprites' tiles
-        player_animation_frame = update_sprite_animation(
-                PLAYER_SPRITE_ID,
-                PLAYER_SPRITE_ANIM,
-                player_direction,
-                player_animation_frame);
-
+      // Update sprites' tiles
+      player_animation_frame = update_sprite_animation(
+              PLAYER_SPRITE_ID,
+              PLAYER_SPRITE_ANIM,
+              player_direction,
+              player_animation_frame);
+          
       // SECTION HANDLING ENEMIES
       // If there are several enemies, the following is to be done with EACH enemy that is alive.
       if (basic.health > 0) { // Enemy is alive: handle its walk and its attack
