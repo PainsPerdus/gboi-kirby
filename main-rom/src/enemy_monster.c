@@ -1,5 +1,6 @@
 #include <gb/gb.h>
 
+#include "collision.h"
 #include "enemy_monster.h"
 #include "dummy.sprites.h"
 
@@ -26,8 +27,10 @@ void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 a
 	unit->frames_until_next_attack = frames_between_attacks; // There is one full cycle before the enemy starts behaving normally. Might want to be able to configure that.
 	unit->frames_until_next_step = WALKING_FRAMES_BETWEEN_STEPS;
 	unit->walking_animation_state = 0;
-	unit->walking_direction = WALKING_DIRECTION_LEFT;
+	unit->walking_direction = WALKING_DIRECTION_LEFT; // Might need removal
 	unit->dying_animation_state = 0; // Start off alive.
+	//unit->enemy_rectangle.size.w = ENEMY_WIDTH;
+	//unit->enemy_rectangle.size.h = ENEMY_HEIGHT;
 }
 
 inline void init_melee(ENEMY* unit) {
@@ -52,10 +55,10 @@ void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	move_sprite(unit->sprite_id1, xpos + X_SPRITE_OFFSET + scroll_x, ypos + Y_SPRITE_OFFSET + scroll_y);
 	move_sprite(unit->sprite_id2, xpos + X_SPRITE_OFFSET + 8 + scroll_x, ypos + Y_SPRITE_OFFSET + scroll_y);
 	
-	// Store current position unless it's out of range
+	// Store current position and update rectangle, unless it's offscreen
 	if (xpos < X_OFFSCREEN && ypos < Y_OFFSCREEN) {
-		unit->xpos = xpos;
-		unit->ypos = ypos;
+		unit->enemy_rectangle.pos.x = xpos;
+		unit->enemy_rectangle.pos.y = ypos;
 	}
 }
 
@@ -66,8 +69,8 @@ void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos) {
 	scroll_sprite(unit->sprite_id1, dxpos, dypos);
 	scroll_sprite(unit->sprite_id2, dxpos, dypos);
 
-	unit->xpos += dxpos;
-	unit->ypos += dypos;
+	unit->enemy_rectangle.pos.x += dxpos;
+	unit->enemy_rectangle.pos.y += dypos;
 }
 
 // Handles all steps of the enemy death sequence
@@ -85,7 +88,7 @@ void enemy_death(ENEMY* unit) {
 		case 19:
 		case 31:
 		case 43:
-			move_enemy(unit, unit->xpos, unit->ypos); // This will work because move_enemy does not update (x, y) if it's equal to (200, 200)
+			move_enemy(unit, unit->enemy_rectangle.pos.x, unit->enemy_rectangle.pos.y); // This will work because move_enemy does not update (x, y) if it's equal to (200, 200)
 			break;
 		case 49: // Enemy disappears, for real this time!
 			enemy_release(unit);
@@ -172,23 +175,19 @@ void handle_enemy_walk(ENEMY* unit) {
 	if (!unit->frames_until_next_step) {
 		switch (unit->walking_direction) {
 			case WALKING_DIRECTION_DOWN:
-				if (unit->ypos < 120) // Arbitrary value for testing purposes; should be replaced with an actual "can go ahead" check
-					scroll_enemy(unit, 0, 1);
+				scroll_enemy(unit, 0, 1);
 				break;
 			
 			case WALKING_DIRECTION_UP:
-				if (unit->ypos > 0) // Ditto
-					scroll_enemy(unit, 0, -1);
+				scroll_enemy(unit, 0, -1);
 				break;
 			
 			case WALKING_DIRECTION_RIGHT:
-				if (unit->xpos < 120) // Ditto
-					scroll_enemy(unit, 1, 0);
+				scroll_enemy(unit, 1, 0);
 				break;
 				
 			case WALKING_DIRECTION_LEFT:
-				if (unit->xpos > 0) // Ditto
-					scroll_enemy(unit, -1, 0);
+				scroll_enemy(unit, -1, 0);
 				break;
 			
 			default:

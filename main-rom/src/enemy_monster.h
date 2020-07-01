@@ -2,6 +2,7 @@
 #define _ENEMY_MONSTER_H
 
 #include <gb/gb.h>
+#include "collision.h"
 
 #define ENEMY_ATTACK_PROJECTILE 0
 #define ENEMY_ATTACK_MELEE 1
@@ -25,6 +26,8 @@
 #define X_OFFSCREEN 240
 #define Y_OFFSCREEN 240
 
+#define ENEMY_HEIGHT 16
+#define ENEMY_WIDTH 16
 
 typedef struct enemy {
 	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
@@ -38,8 +41,8 @@ typedef struct enemy {
 	UINT8 frames_between_attacks; // number of frames between attacks (that is how "attack speed" is controlled)
 	UINT8 frames_until_next_attack; // acts as a counter for the current enemy
 	UINT8 dying_animation_state; // INTERNAL. 0: enemy alive, 1-49: death animation, above: dead
-	UINT8 xpos; // current x pos
-	UINT8 ypos; // current y pos
+	RECTANGLE enemy_rectangle; // holds enemy current pos
+	RECTANGLE enemy_next_rectangle; // used for future pos attempts
 	UINT8 frames_until_next_step; // also a counter, used to handle walking instead
 	UINT8 walking_animation_state; // manages walking animation
 	UINT8 walking_direction;
@@ -132,7 +135,7 @@ void enemy_hp_loss(ENEMY* unit, UINT8 amount);
 void enemy_hp_regen(ENEMY* unit, UINT8 amount);
 
 /**
- * @brief Enemy unit launches its attack
+ * @brief Handles attacks of specified enemy unit (WIP)
  *
  * @param unit
  */
