@@ -48,6 +48,7 @@ typedef struct enemy {
 	UINT8 frames_until_next_step; // also a counter, used to handle walking instead
 	UINT8 walking_animation_state; // manages walking animation
 	UINT8 walking_direction;
+	VEC_DIFF diff_with_player;
 	// Unhandled at this point:
 	// - projectile speed (if we decide that it depends on the monster rather than, for example, on how far the player got in the game)
 } ENEMY;
@@ -150,7 +151,6 @@ void handle_enemy_attack(ENEMY* unit);
  */
 void handle_enemy_walk(ENEMY* unit);
 
-
 /**
  * @brief Get the next available enemy. If there is none, recycle
  * the oldest.
@@ -159,4 +159,10 @@ void handle_enemy_walk(ENEMY* unit);
  */
 ENEMY* get_available_enemy();
 
+/**
+ * @brief Calculates and stores x difference and y difference between player and specified unit
+ *
+ * @param unit
+ */
+void calculate_diff_with_player(ENEMY* unit);
 #endif

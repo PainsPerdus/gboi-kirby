@@ -40,7 +40,7 @@ inline void init_melee(ENEMY* unit) {
 }
 
 // Display enemy unit on-screen at specified x and y coordinates
-void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {	
+void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	// Initialize left sprite
 	set_sprite_tile(unit->sprite_id1, unit->enemy_sprite_l);
 	
@@ -172,79 +172,86 @@ void handle_enemy_attack(ENEMY* unit) {
 // Handle enemy walking sequence
 // #TODO: checks: ensure we're not going out of bounds (should I assume AI cannot change rooms, unlike players), mind collisions (objects, player)
 void handle_enemy_walk(ENEMY* unit) {
+	// Since this is called every frame, proceed by one frame
 	unit->frames_until_next_step--;
+	// First step: calculate distance to player
+	calculate_diff_with_player(unit);
+	
+	// Initializing for potential future use
+	INT8 enemy_step_dx = 0;
+	INT8 enemy_step_dy = 0;
 	
 	if (!unit->frames_until_next_step) {
+		// This frame, the monster can move.
+		// First step: Decide in which direction! (#TODO: take into account the fact that distance is between top-left corners)
+		if (unit->diff_with_player.dx < 0 && unit->diff_with_player.dy < 0) {
+			// Decide whether to move leftwards or upwards
+			if (unit->diff_with_player.dx > unit->diff_with_player.dy) // Move upwards
+				unit->walking_direction = WALKING_DIRECTION_UP;
+			else
+				unit->walking_direction = WALKING_DIRECTION_LEFT;
+		} else if (unit->diff_with_player.dx > 0 && unit->diff_with_player.dy < 0) {
+			// Decide whether to move rightwards or upwards
+			if (unit->diff_with_player.dx < - unit->diff_with_player.dy) // Move upwards
+				unit->walking_direction = WALKING_DIRECTION_UP;
+			else
+				unit->walking_direction = WALKING_DIRECTION_RIGHT;
+		} else if (unit->diff_with_player.dx > 0 && unit->diff_with_player.dy > 0) {
+			// Decide whether to move rightwards or downwards
+			if (unit->diff_with_player.dx < unit->diff_with_player.dy) // Move downwards
+				unit->walking_direction = WALKING_DIRECTION_DOWN;
+			else
+				unit->walking_direction = WALKING_DIRECTION_RIGHT;
+		} else if (unit->diff_with_player.dx < 0 && unit->diff_with_player.dy > 0) {
+			// Decide whether to move leftwards or downwards
+			if (- unit->diff_with_player.dx < unit->diff_with_player.dy) // Move downwards
+				unit->walking_direction = WALKING_DIRECTION_DOWN;
+			else
+				unit->walking_direction = WALKING_DIRECTION_LEFT;
+		} else {
+			unit->walking_direction = WALKING_DIRECTION_IMMOBILE;
+		}
+		
+		// Second step: enact movement, if you're not colliding!
 		switch (unit->walking_direction) {
 			case WALKING_DIRECTION_DOWN:
-				if (unit->enemy_rectangle.pos.y < 200) {
-					// Compute future pos
-					unit->enemy_next_rectangle = unit->enemy_rectangle;
-					unit->enemy_next_rectangle.pos.y += 1;
-					
-					// Detect collision with player
-					if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
-						unit->walking_direction = WALKING_DIRECTION_UP;
-					} else {
-						scroll_enemy(unit, 0, 1);
-					}
-				}
+				if (unit->enemy_rectangle.pos.y < 200)
+					enemy_step_dy = 1;
 				break;
 			
 			case WALKING_DIRECTION_UP:
-				if (unit->enemy_rectangle.pos.y > 0) {
-					// Compute future pos
-					unit->enemy_next_rectangle = unit->enemy_rectangle;
-					unit->enemy_next_rectangle.pos.y -= 1;
-					
-					// Detect collision with player
-					if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
-						unit->walking_direction = WALKING_DIRECTION_DOWN;
-					} else {
-						scroll_enemy(unit, 0, -1);
-					}
-				}
+				if (unit->enemy_rectangle.pos.y > 0)
+					enemy_step_dy = -1;
 				break;
 			
 			case WALKING_DIRECTION_RIGHT:
-				if (unit->enemy_rectangle.pos.x < 200) {
-					// Compute future pos
-					unit->enemy_next_rectangle = unit->enemy_rectangle;
-					unit->enemy_next_rectangle.pos.x += 1;
-					
-					// Detect collision with player
-					if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
-						unit->walking_direction = WALKING_DIRECTION_LEFT;
-					} else {
-						scroll_enemy(unit, 1, 0);
-					}
-				}
+				if (unit->enemy_rectangle.pos.x < 200)
+					enemy_step_dx = 1;
 				break;
 				
 			case WALKING_DIRECTION_LEFT:
-				if (unit->enemy_rectangle.pos.x > 0) {
-					// Compute future pos
-					unit->enemy_next_rectangle = unit->enemy_rectangle;
-					unit->enemy_next_rectangle.pos.x -= 1;
-					
-					// Detect collision with player
-					if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
-						unit->walking_direction = WALKING_DIRECTION_RIGHT;
-					} else {
-						scroll_enemy(unit, -1, 0);
-					}
-				}
+				if (unit->enemy_rectangle.pos.x > 0)
+					enemy_step_dx = -1;
 				break;
 			
 			default:
 				break;
 		}
 		
+		// Compute future pos
+		unit->enemy_next_rectangle = unit->enemy_rectangle;
+		unit->enemy_next_rectangle.pos.y += enemy_step_dx;
+		unit->enemy_next_rectangle.pos.y += enemy_step_dy;
+					
+		// Detect collision with player before scrolling
+		if (!rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
+			scroll_enemy(unit, enemy_step_dx, enemy_step_dy);
+		}
+		
 		// Reset waiting sequence
 		unit->frames_until_next_step = WALKING_FRAMES_BETWEEN_STEPS;
 	}
 }
-
 
 ENEMY enemy_stack[MAX_ENEMY_NB];
 UINT8 enemy_stack_ptr = 0;
@@ -255,4 +262,9 @@ ENEMY* get_available_enemy() {
 	if (enemy_stack_ptr == MAX_ENEMY_NB)  // cycle back
 		enemy_stack_ptr = 0;
 	return enemy;
+
+// Calculate and store x difference and y difference between player and specified unit
+void calculate_diff_with_player(ENEMY* unit) {
+	unit->diff_with_player.dx = player.pos.x - unit->enemy_rectangle.pos.x;
+	unit->diff_with_player.dy = player.pos.y - unit->enemy_rectangle.pos.y;
 }
