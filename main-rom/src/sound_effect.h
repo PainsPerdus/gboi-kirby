@@ -35,5 +35,17 @@ void play_dash_sound();
  */
 void play_chainsaw_attack_sound();
 
+/**
+ * @brief Play the sound of something dying 
+ *
+ */
+void play_death_sound();
+
+/**
+ * @brief Play the sound of futur weapon shooting 
+ *
+ */
+void play_blaster_sound();
+
 #endif
 
