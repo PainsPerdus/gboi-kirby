@@ -1,5 +1,7 @@
 #include <gb/gb.h>
 
+#include "enemy_monster.h"
+#include "dummy.sprites.h"
 #include "player.sprites.h"
 #include "collision.h"
 #include "tileset.h"
@@ -13,6 +15,7 @@
 #define CHAINSAW_TOP_LATERAL_SPRITE_ID (PLAYER_SPRITE_ID + PLAYER_SPRITES_TILE_COUNT)
 #define CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID (CHAINSAW_TOP_LATERAL_SPRITE_ID + 2)
 #define CHAINSAW_WOOSH_2_LATERAL_SPRITE_ID (CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID + 2)
+#define DUMMY_SPRITE_ID (CHAINSAW_TOP_LATERAL_SPRITE_ID + CHAINSAW_LATERAL_SPRITES_TILE_COUNT)
 
 
 // Animations data for the player's sprite
@@ -312,12 +315,12 @@ void read_input() {
 
 
 void init_graphics() {
-    // Load sprites' tiles in video memory
+    // Load sprites' tiles in video memory (player, chainsaw)
     set_sprite_data(PLAYER_SPRITE_ID, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
     set_sprite_data(PLAYER_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES);
-
-
-
+	// Load dummy enemy in video memory
+	set_sprite_data(PLAYER_SPRITES_TILE_COUNT + CHAINSAW_LATERAL_SPRITES_TILE_COUNT, DUMMY_SPRITES_TILE_COUNT, DUMMY_SPRITES);
+	
     // Use 8x16 sprites
     SPRITES_8x16;
     // Makes sprites "layer" visible
@@ -586,6 +589,11 @@ void main(void) {
     init_dash_state();
     init_sawchain_state();
     init_graphics();
+	
+	// Loading self-attacking enemy (two attacks/second)
+	ENEMY basic;
+	init_enemy(&basic, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, 1, ENEMY_ATTACK_NONE, 2, 8, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
+	display_enemy(&basic, 72, 80);
 
     while (1) {
         // Wait for v-blank (screen refresh)
@@ -625,5 +633,15 @@ void main(void) {
                 PLAYER_SPRITE_ANIM,
                 player_direction,
                 player_animation_frame);
+          
+      // SECTION HANDLING ENEMIES
+      // If there are several enemies, the following is to be done with EACH enemy that is alive.
+      if (basic.health == 0) { // Enemy is alive: handle its walk and its attack
+        handle_enemy_walk(&basic);
+        handle_enemy_attack(&basic);
+      } else if (basic.dying_animation_state < 50) {
+        // Enemy about to die: play death animation.
+        enemy_death(&basic);
+      }
     }
 }
