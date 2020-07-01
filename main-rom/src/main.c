@@ -194,6 +194,15 @@ void reset_doors() {
   }
 }
 
+static void open_doors() {
+  ROOM* room = &base_floor.rooms[room_number];
+  for (UINT8 i = 0; i < 4; i++) {
+    if (room->doors[i].keys[0] + room->doors[i].keys[1] + room->doors[i].keys[2] < 3) {
+      room->doors[i].is_open = TRUE;
+    }
+  }
+}
+
 /**
  * @brief Replace the currently loaded room in TILEMAP with base_floor.rooms[room_number]
  */
@@ -226,10 +235,14 @@ void check_doors() {
   for (UINT8 i = 0; i < 4; i++) {
     if (rect_rect_collision(&player, &door_hitboxes[i])) {
       room_number = room->doors[i].room_ptr;
+      room = &base_floor.rooms[room_number];
       load_room();
       load_tilemap();
+
+      // if doors are open, then that means that all enemies are dead already
+      if (!(room->doors[0].is_open || room->doors[1].is_open || room->doors[2].is_open || room->doors[3].is_open))
+        load_enemies();
       reset_doors();
-      load_enemies();
       
       room = &base_floor.rooms[room_number];
       UINT8 size = room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;
@@ -703,13 +716,21 @@ void main(void) {
               player_direction,
               player_animation_frame);
 
+      BOOLEAN all_dead = TRUE;
       for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
-        if (enemy_stack[i].health > 0)
+        if (enemy_stack[i].health > 0) {
           handle_enemy_attack(&enemy_stack[i]);
-        else 
+          all_dead = FALSE;
+        } else 
           enemy_death(&enemy_stack[i]);
-
       }
+
+      if (all_dead) {
+        open_doors();
+        reset_doors();
+      }
+
+
           
       // SECTION HANDLING ENEMIES
       // If there are several enemies, the following is to be done with EACH enemy that is alive.
