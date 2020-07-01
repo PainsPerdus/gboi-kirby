@@ -44,7 +44,7 @@ The game starts with Piney murdering some random innocent fruit scientists
 while they're working. This level is a tutorial for the player to learn how to
 control little Piney and no fruit will defend itself. A pure bloodbath.
 
-<img src="/gboi-kirby/assets/img/ennemies/innocents.png" height="150"  />
+<img src="/gboi-kirby/assets/img/enemies/innocents.png" height="150"  />
 
 After a cutscene showing the demonic portal, the player is left right after the
 first demon fruits appeared. Piney must find the exit, and for that, he will
@@ -61,8 +61,8 @@ little to find a fruit that is recognizable enough and that I could modify so
 that it looks like it was coming from hell. Also, I wanted to try to copy the
 _Binding of Issac_'s enemy art style. And so, I came up with *Jaw Pear*:
 
-<img src="/gboi-kirby/assets/img/ennemies/pear jax.gif" width="150"  />
-<img src="/gboi-kirby/assets/img/ennemies/attack.gif" width="150"  />
+<img src="/gboi-kirby/assets/img/enemies/pear jax.gif" width="150"  />
+<img src="/gboi-kirby/assets/img/enemies/attack.gif" width="150"  />
 
 It's a pear, with a jaw. Obvious isn't it?
 
