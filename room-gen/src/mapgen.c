@@ -26,6 +26,7 @@ static TILE background_filler[18*18] = {
 
 #include <stdio.h>
 
+ROOM base_floor[1];
 
 int main(void) {
 
