@@ -46,7 +46,7 @@ void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 }
 
 // Handles relative enemy movement by (dx,dy)
-void scroll_enemy(ENEMY* unit, UINT8 dxpos, UINT8 dypos) {
+void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos) {
 	// Moves enemy unit by (dx,dy)
 	scroll_sprite(unit->sprite_id, dxpos, dypos);
 	scroll_sprite(unit->sprite_id + 1, dxpos, dypos);

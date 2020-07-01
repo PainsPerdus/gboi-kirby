@@ -84,7 +84,7 @@ void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos);
  * @param xpos
  * @param ypos
  */
-void scroll_enemy(ENEMY* unit, UINT8 dxpos, UINT8 dypos);
+void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos);
 
 /**
  * @brief Handles enemy death sequence: death animation and actual death
