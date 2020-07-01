@@ -19,7 +19,7 @@
 
 // sprite placement offset
 #ifndef _SPRITE_OFFSET
-#define X_SPRITE_OFFSET 8
+#define X_SPRITE_OFFSET 24
 #define Y_SPRITE_OFFSET 16
 #endif
 
@@ -28,6 +28,8 @@
 
 #define ENEMY_HEIGHT 16
 #define ENEMY_WIDTH 16
+
+extern RECTANGLE player;
 
 typedef struct enemy {
 	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
