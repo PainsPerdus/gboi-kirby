@@ -222,7 +222,6 @@ static void init() {
 }
 
 #include <stdio.h>
-extern ROOM base_floor[1];
 void gen_floor() {
     //init();
     /*while (build_list_ptr < nb_rooms) {

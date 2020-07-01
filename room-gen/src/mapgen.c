@@ -3,9 +3,6 @@
 #include "tileset.h"
 #include "room.h"
 
-extern ROOM base_floor[1];
-
-
 static TILE background_filler[18*18] = {
     4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
     4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
@@ -28,6 +25,8 @@ static TILE background_filler[18*18] = {
 };
 
 #include <stdio.h>
+
+
 int main(void) {
 
     set_bkg_data(0, TILESET_TILE_COUNT, TILESET);

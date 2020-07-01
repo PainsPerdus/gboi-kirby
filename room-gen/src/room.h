@@ -30,7 +30,7 @@ typedef struct {
     };
 } ROOM;
 
-ROOM base_floor[1];
+extern ROOM base_floor[1];
 
 TILE* get_room_tiles(ROOM* room);
 
