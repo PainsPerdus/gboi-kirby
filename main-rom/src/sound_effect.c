@@ -87,6 +87,23 @@ void play_blaster_sound() {
 	__asm__("ld (#0xFF14),a");
 }
 
+void play_death_sound() {
+
+	init_sound();
+	__asm__("ld a, #0x11"); 	// $0001 0001 : S01 and S02 use only sound 1
+	__asm__("ld (#0xFF25),a");
+	__asm__("ld a, #0x7F"); 	// $0111 1111 : envelope decrease
+	__asm__("ld (#0xFF10),a");
+	__asm__("ld a, #0x20"); 	// $0010 0000 : wave pattern
+	__asm__("ld (#0xFF11),a");
+	__asm__("ld a, #0xF7"); 	// $1111 0001 : envelope volume
+	__asm__("ld (#0xFF12),a");
+	__asm__("ld a, #0xA9"); 	// $1010 1001 : frequency part 1
+	__asm__("ld (#0xFF13),a");
+	__asm__("ld a, #0xC7"); 	// $1100 0111 : initial frequency = 1500 Hz
+	__asm__("ld (#0xFF14),a");
+}
+
 void play_chainsaw_attack_sound() {
 
 	init_sound();
