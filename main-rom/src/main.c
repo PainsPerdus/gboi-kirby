@@ -636,10 +636,10 @@ void main(void) {
           
       // SECTION HANDLING ENEMIES
       // If there are several enemies, the following is to be done with EACH enemy that is alive.
-      if (basic.health == 0) { // Enemy is alive: handle its walk and its attack
+      if (basic.health > 0) { // Enemy is alive: handle its walk and its attack
         handle_enemy_walk(&basic);
         handle_enemy_attack(&basic);
-      } else if (basic.dying_animation_state < 50) {
+      } else {
         // Enemy about to die: play death animation.
         enemy_death(&basic);
       }
