@@ -39,6 +39,13 @@ assets:
 		--name CHAINSAW_LATERAL_SPRITES \
 		./img/chainsaw_lateral.png
 	$(IMG2GB) tileset \
+		--output-c-file=src/dummy.sprites.c \
+		--output-header-file=src/dummy.sprites.h \
+		--output-image=src/dummy.sprites.png \
+		--sprite8x16 \
+		--name DUMMY_SPRITES \
+		./img/dummy.png
+	$(IMG2GB) tileset \
 		--output-c-file=src/tileset.c \
 		--output-header-file=src/tileset.h \
 		--name TILESET \
