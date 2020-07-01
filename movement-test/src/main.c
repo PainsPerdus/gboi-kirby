@@ -166,7 +166,7 @@ void read_input() {
           dx += 1;
       }
 
-      if(keys & J_SELECT){
+      if(keys & J_B){
         if (cooldown > cooldown_dash){
           player_direction += 36;             //dash tiles = direction tile + 36
           is_dashing = 1;
