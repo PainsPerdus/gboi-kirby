@@ -9,22 +9,21 @@ CHUNK_MAKER = cargo run --manifest-path ../podpacker/Cargo.toml
 
 
 _OBJ =  $(patsubst %.c,%.o,$(wildcard src/*.c))
+# _OBJ =  $(wildcard src/*.o)
 
 
-all: build
-
-build: $(PROG).gb
+all: $(PROG).gb
 
 debug: $(wildcard src/*.c)
 	$(CC) -S $^
 
 $(PROG).gb: $(_OBJ)
-	$(CC) -o $(PROG).gb $^
+	$(CC) -o $(PROG).gb $(_OBJ)
 
-%.o: %.c
+%.o: %.c assets chunks
 	$(CC) -o $@ -c $<
 
-assets:
+assets: 
 	$(IMG2GB) tileset \
 		--output-c-file=src/player.sprites.c \
 		--output-header-file=src/player.sprites.h \
@@ -55,17 +54,17 @@ gbdk-2020:
 	cd $(GBDK_2020) && make
 
 clean:
-	rm -rf src/*.rel
-	rm -rf src/*.lst
-	rm -rf src/*.sym
-	rm -rf src/*.asm
-	rm -rf src/*.o
-	rm -rf $(PROG).gb
-	rm -rf $(PROG).ihx
-	rm -rf $(PROG).map
-	rm -rf $(PROG).sym
-	rm -rf $(PROG).noi
-	rm -rf $(PROG).lk
-	rm src/player.sprites.*
-	rm src/tileset.*
-	rm src/chunks*
+	rm -f src/*.rel
+	rm -f src/*.lst
+	rm -f src/*.sym
+	rm -f src/*.asm
+	rm -f src/*.o
+	rm -f $(PROG).gb
+	rm -f $(PROG).ihx
+	rm -f $(PROG).map
+	rm -f $(PROG).sym
+	rm -f $(PROG).noi
+	rm -f $(PROG).lk
+	rm -f src/*.sprites.*
+	rm -f src/tileset.*
+	rm -f src/chunks*
