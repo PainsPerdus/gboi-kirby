@@ -29,7 +29,8 @@
 typedef struct enemy {
 	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
 	UINT8 enemy_sprite_r; // enemy right sprite
-	UINT8 sprite_id; // left sprite ID (0-38, even number preferrably)
+	UINT8 sprite_id1; // left sprite ID (0-38, even number preferrably)
+	UINT8 sprite_id2; // right sprite ID
 	UINT8 attack_type; // enemy attack type, see macros defined above
 	UINT8 max_health; // monster max HP
 	UINT8 health; // monster current HP
@@ -59,13 +60,12 @@ extern UINT8 enemy_stack_ptr;
  * @param unit
  * @param enemy_sprite_l left sprite
  * @param enemy_sprite_r right sprite
- * @param s_id sprite ID, should be an even number in 0-38
  * @param attack_type above ENEMY_ATTACK_* macros
  * @param damage
  * @param hp
  * @param frames_between_attacks
  */
-void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s_id, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 frames_between_attacks);
+void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 frames_between_attacks);
 
 /**
  * @brief Initialize a melee unit

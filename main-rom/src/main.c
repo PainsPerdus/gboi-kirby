@@ -12,6 +12,7 @@
 #include "chainsaw_lateral.sprites.h"
 #include "chainsaw_vertical.sprites.h"
 #include "animations.h"
+#include "oam_pool.h"
 
 // Variables containing player state
 static RECTANGLE player;
@@ -626,6 +627,11 @@ void init_chainsaw_state() {
 }
 
 void main(void) {
+
+    borrow_oam_id();  // player
+    borrow_oam_id();  // chainsaw1
+    borrow_oam_id();  // chainsaw2
+
     gen_floor();
 
     load_room();
@@ -692,7 +698,11 @@ void main(void) {
               player_animation_frame);
 
       for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
-      //  handle_enemy_walk(&enemy_stack[i]);
+        if (enemy_stack[i].health > 0)
+          handle_enemy_attack(&enemy_stack[i]);
+        else 
+          enemy_death(&enemy_stack[i]);
+
       }
           
       // SECTION HANDLING ENEMIES

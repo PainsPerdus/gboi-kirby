@@ -9,15 +9,15 @@
 #include "chainsaw_lateral.sprites.h"
 #include "chainsaw_vertical.sprites.h"
 #include "animations.h"
+#include "oam_pool.h"
 
 
 // Initialize an enemy unit
-void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s_id, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 frames_between_attacks) {
-	static UINT8 ids = 1;
-	
+void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 frames_between_attacks) {
 	unit->enemy_sprite_l = enemy_sprite_l;
 	unit->enemy_sprite_r = enemy_sprite_r;
-	unit->sprite_id = ids+=2;//s_id;
+	unit->sprite_id1 = borrow_oam_id();
+	unit->sprite_id2 = borrow_oam_id();
 	unit->attack_type = attack_type;
 	unit->max_health = hp;
 	unit->health = hp; // Enemies always start full HP.
@@ -31,16 +31,16 @@ void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s
 }
 
 inline void init_melee(ENEMY* unit) {
-    init_enemy(unit, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, 1, ENEMY_ATTACK_NONE, 2, 8, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
+    init_enemy(unit, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, ENEMY_ATTACK_SELF, 2, 8, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
 }
 
 // Display enemy unit on-screen at specified x and y coordinates
 void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {	
 	// Initialize left sprite
-	set_sprite_tile(unit->sprite_id, unit->enemy_sprite_l);
+	set_sprite_tile(unit->sprite_id1, unit->enemy_sprite_l);
 	
 	// Initialize right sprite
-	set_sprite_tile(unit->sprite_id + 1, unit->enemy_sprite_r);
+	set_sprite_tile(unit->sprite_id2, unit->enemy_sprite_r);
 	
 	// Place the sprites
 	move_enemy(unit, xpos, ypos);
@@ -49,8 +49,8 @@ void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 // Handles absolute enemy movement to specified (x,y) coordinates
 void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	// Moves enemy unit to (x,y)
-	move_sprite(unit->sprite_id, xpos + X_SPRITE_OFFSET + scroll_x, ypos + Y_SPRITE_OFFSET + scroll_y);
-	move_sprite(unit->sprite_id + 1, xpos + X_SPRITE_OFFSET + 8 + scroll_x, ypos + Y_SPRITE_OFFSET + scroll_y);
+	move_sprite(unit->sprite_id1, xpos + X_SPRITE_OFFSET + scroll_x, ypos + Y_SPRITE_OFFSET + scroll_y);
+	move_sprite(unit->sprite_id2, xpos + X_SPRITE_OFFSET + 8 + scroll_x, ypos + Y_SPRITE_OFFSET + scroll_y);
 	
 	// Store current position unless it's out of range
 	if (xpos < X_OFFSCREEN && ypos < Y_OFFSCREEN) {
@@ -63,8 +63,8 @@ void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 // Handles relative enemy movement by (dx,dy)
 void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos) {
 	// Moves enemy unit by (dx,dy)
-	scroll_sprite(unit->sprite_id, dxpos, dypos);
-	scroll_sprite(unit->sprite_id + 1, dxpos, dypos);
+	scroll_sprite(unit->sprite_id1, dxpos, dypos);
+	scroll_sprite(unit->sprite_id2, dxpos, dypos);
 
 	unit->xpos += dxpos;
 	unit->ypos += dypos;
@@ -87,13 +87,16 @@ void enemy_death(ENEMY* unit) {
 			break;
 		case 49: // Enemy disappears, for real this time!
 			move_enemy(unit, X_OFFSCREEN, Y_OFFSCREEN);
-			// #TODO: release the sprite IDs in the sprite ID pool, once said pool is created
+			free_oam_id(unit->sprite_id1);
+			free_oam_id(unit->sprite_id2);
+
 			break;
 		default:
 			break;
 	}
 	
-	unit->dying_animation_state++;
+	if (unit->dying_animation_state < 49)
+		unit->dying_animation_state++;
 }
 
 // Enemy unit loses specified amount of HP
@@ -108,14 +111,14 @@ void enemy_hp_loss(ENEMY* unit, UINT8 amount) {
 	}
 	
 	// Enable palette swap
-	set_sprite_prop(unit->sprite_id, get_sprite_prop(unit->sprite_id) | S_PALETTE);
-	set_sprite_prop(unit->sprite_id + 1, get_sprite_prop(unit->sprite_id + 1) | S_PALETTE);
+	set_sprite_prop(unit->sprite_id1, get_sprite_prop(unit->sprite_id1) | S_PALETTE);
+	set_sprite_prop(unit->sprite_id2, get_sprite_prop(unit->sprite_id2) | S_PALETTE);
 	// Wait 1/30th of a second
 	wait_vbl_done();
 	wait_vbl_done();
 	// Swap to default palette
-	set_sprite_prop(unit->sprite_id, get_sprite_prop(unit->sprite_id) & ~S_PALETTE);
-	set_sprite_prop(unit->sprite_id + 1, get_sprite_prop(unit->sprite_id + 1) & ~S_PALETTE);
+	set_sprite_prop(unit->sprite_id1, get_sprite_prop(unit->sprite_id1) & ~S_PALETTE);
+	set_sprite_prop(unit->sprite_id2, get_sprite_prop(unit->sprite_id2) & ~S_PALETTE);
 }
 
 // Enemy unit gains specified amount of HP. This is capped to max enemy health.
