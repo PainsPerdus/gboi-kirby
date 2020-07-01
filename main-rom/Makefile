@@ -1,12 +1,14 @@
 # pod = Pineapple of Doom
-PROG = floorgen
+PROG = pod
 
 export SDCCDIR=/usr  # might not work for everyone
 GBDK_2020 = ../gbdk-2020/
 CC = $(GBDK_2020)/build/gbdk/bin/lcc -Wa-l -Wl-m -Wl-j
 IMG2GB = img2gb
+CHUNK_MAKER = cargo run --manifest-path ../podpacker/Cargo.toml 
 
-_OBJ = $(patsubst %.c,%.o,$(wildcard src/*.c))
+
+_OBJ =  $(patsubst %.c,%.o,$(wildcard src/*.c))
 
 
 all: build
@@ -21,6 +23,25 @@ $(PROG).gb: $(_OBJ)
 
 %.o: %.c
 	$(CC) -o $@ -c $<
+
+assets:
+	$(IMG2GB) tileset \
+		--output-c-file=src/player.sprites.c \
+		--output-header-file=src/player.sprites.h \
+		--output-image=src/player.sprites.png \
+		--sprite8x16 \
+		--name PLAYER_SPRITES \
+		./piney.png
+	$(IMG2GB) tileset \
+		--output-c-file=src/tileset.c \
+		--output-header-file=src/tileset.h \
+		--name TILESET \
+		./tileset.png
+
+chunks: 
+	$(CHUNK_MAKER) ../ogmo/chunks/zero 0 ./src
+	$(CHUNK_MAKER) ../ogmo/chunks/one 1 ./src
+	$(CHUNK_MAKER) ../ogmo/chunks/two 2 ./src
 
 .PHONY: gbdk-2020
 gbdk-2020:
@@ -40,3 +61,4 @@ clean:
 	rm -rf $(PROG).lk
 	rm src/player.sprites.*
 	rm src/tileset.*
+	rm src/chunks*
