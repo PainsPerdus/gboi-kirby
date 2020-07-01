@@ -30,10 +30,10 @@ I intend on making a separate post about it when I have enough time.
 ## AI
 
 [AdameBF](https://github.com/AdameBF) finally got his simple AI working. How
-intelligent is it? Well it can... die?
+intelligent is it? Well it can... die. But in a classy way!
 
 <video autoplay height="300" controls>
-  <source src="/gboi-kirby/assets/babysteps2.webm" type="video/webm">
+  <source src="/gboi-kirby/assets/enemy_death.webm" type="video/webm">
 </video>
 
 
