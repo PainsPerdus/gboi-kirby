@@ -19,7 +19,7 @@
 #include "oam_pool.h"
 
 // Variables containing player state
-static RECTANGLE player;
+RECTANGLE player;
 static RECTANGLE new_player;
 static UINT8 player_direction;
 static UINT8 player_animation_frame;

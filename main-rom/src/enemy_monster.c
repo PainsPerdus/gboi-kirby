@@ -27,10 +27,12 @@ void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 a
 	unit->frames_until_next_attack = frames_between_attacks; // There is one full cycle before the enemy starts behaving normally. Might want to be able to configure that.
 	unit->frames_until_next_step = WALKING_FRAMES_BETWEEN_STEPS;
 	unit->walking_animation_state = 0;
-	unit->walking_direction = WALKING_DIRECTION_LEFT; // Might need removal
+	unit->walking_direction = WALKING_DIRECTION_UP; // Might need removal
 	unit->dying_animation_state = 0; // Start off alive.
-	//unit->enemy_rectangle.size.w = ENEMY_WIDTH;
-	//unit->enemy_rectangle.size.h = ENEMY_HEIGHT;
+	unit->enemy_rectangle.size.w = ENEMY_WIDTH;
+	unit->enemy_rectangle.size.h = ENEMY_HEIGHT;
+	unit->enemy_next_rectangle.size.w = ENEMY_WIDTH;
+	unit->enemy_next_rectangle.size.h = ENEMY_HEIGHT;
 }
 
 inline void init_melee(ENEMY* unit) {
@@ -175,19 +177,63 @@ void handle_enemy_walk(ENEMY* unit) {
 	if (!unit->frames_until_next_step) {
 		switch (unit->walking_direction) {
 			case WALKING_DIRECTION_DOWN:
-				scroll_enemy(unit, 0, 1);
+				if (unit->enemy_rectangle.pos.y < 200) {
+					// Compute future pos
+					unit->enemy_next_rectangle = unit->enemy_rectangle;
+					unit->enemy_next_rectangle.pos.y += 1;
+					
+					// Detect collision with player
+					if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
+						unit->walking_direction = WALKING_DIRECTION_UP;
+					} else {
+						scroll_enemy(unit, 0, 1);
+					}
+				}
 				break;
 			
 			case WALKING_DIRECTION_UP:
-				scroll_enemy(unit, 0, -1);
+				if (unit->enemy_rectangle.pos.y > 0) {
+					// Compute future pos
+					unit->enemy_next_rectangle = unit->enemy_rectangle;
+					unit->enemy_next_rectangle.pos.y -= 1;
+					
+					// Detect collision with player
+					if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
+						unit->walking_direction = WALKING_DIRECTION_DOWN;
+					} else {
+						scroll_enemy(unit, 0, -1);
+					}
+				}
 				break;
 			
 			case WALKING_DIRECTION_RIGHT:
-				scroll_enemy(unit, 1, 0);
+				if (unit->enemy_rectangle.pos.x < 200) {
+					// Compute future pos
+					unit->enemy_next_rectangle = unit->enemy_rectangle;
+					unit->enemy_next_rectangle.pos.x += 1;
+					
+					// Detect collision with player
+					if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
+						unit->walking_direction = WALKING_DIRECTION_LEFT;
+					} else {
+						scroll_enemy(unit, 1, 0);
+					}
+				}
 				break;
 				
 			case WALKING_DIRECTION_LEFT:
-				scroll_enemy(unit, -1, 0);
+				if (unit->enemy_rectangle.pos.x > 0) {
+					// Compute future pos
+					unit->enemy_next_rectangle = unit->enemy_rectangle;
+					unit->enemy_next_rectangle.pos.x -= 1;
+					
+					// Detect collision with player
+					if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
+						unit->walking_direction = WALKING_DIRECTION_RIGHT;
+					} else {
+						scroll_enemy(unit, -1, 0);
+					}
+				}
 				break;
 			
 			default:
