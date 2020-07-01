@@ -1,7 +1,7 @@
-#include <gb/gb.h>
-
 #ifndef _ENEMY_MONSTER_H
 #define _ENEMY_MONSTER_H
+
+#include <gb/gb.h>
 
 #define ENEMY_ATTACK_PROJECTILE 0
 #define ENEMY_ATTACK_MELEE 1
@@ -25,6 +25,7 @@
 #define X_OFFSCREEN 240
 #define Y_OFFSCREEN 240
 
+
 typedef struct enemy {
 	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
 	UINT8 enemy_sprite_r; // enemy right sprite
@@ -45,6 +46,13 @@ typedef struct enemy {
 	// - projectile speed (if we decide that it depends on the monster rather than, for example, on how far the player got in the game)
 } ENEMY;
 
+
+#define MAX_ENEMY_NB 10
+extern ENEMY enemy_stack[MAX_ENEMY_NB];
+extern UINT8 enemy_stack_ptr;
+
+
+
 /**
  * @brief Initializes an enemy unit
  *
@@ -58,6 +66,13 @@ typedef struct enemy {
  * @param frames_between_attacks
  */
 void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 s_id, UINT8 attack_type, UINT8 damage, UINT8 hp, UINT8 frames_between_attacks);
+
+/**
+ * @brief Initialize a melee unit
+ * 
+ * @param unit 
+ */
+void init_melee(ENEMY* unit);
 
 /**
  * @brief Displays an enemy unit on-screen at specified x and y coordinates
@@ -122,4 +137,14 @@ void handle_enemy_attack(ENEMY* unit);
  * @param unit
  */
 void handle_enemy_walk(ENEMY* unit);
+
+
+/**
+ * @brief Get the next available enemy. If there is none, recycle
+ * the oldest.
+ * 
+ * @return ENEMY* 
+ */
+ENEMY* get_available_enemy();
+
 #endif

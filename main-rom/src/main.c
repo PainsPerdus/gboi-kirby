@@ -11,66 +11,7 @@
 #include "floorgen.h"
 #include "chainsaw_lateral.sprites.h"
 #include "chainsaw_vertical.sprites.h"
-
-
-/**
- * Sprite groups
-**/
-
-// Group 1: player
-#define PLAYER_SPRITE_ID 0
-
-#define FIRST_PLAYER_SPRITE PLAYER_SPRITE_ID
-
-
-// Group 2: lateral chainsaw
-#define CHAINSAW_TOP_LATERAL_SPRITE_ID (FIRST_PLAYER_SPRITE + PLAYER_SPRITES_TILE_COUNT)
-#define CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID (CHAINSAW_TOP_LATERAL_SPRITE_ID + 2)
-#define CHAINSAW_WOOSH_2_LATERAL_SPRITE_ID (CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID + 2)
-
-
-#define FIRST_CHAINSAW_LATERAL_SPRITE CHAINSAW_TOP_LATERAL_SPRITE_ID
-
-
-// Group 3: vertical chainsaw
-#define CHAINSAW_VERTICAL_SPRITE_ID (FIRST_CHAINSAW_LATERAL_SPRITE + CHAINSAW_LATERAL_SPRITES_TILE_COUNT)
-
-#define FIRST_CHAINSAW_VERTICAL_SPRITE CHAINSAW_VERTICAL_SPRITE_ID
-
-
-// Group 4: dummy
-#define DUMMY_SPRITE_ID (FIRST_CHAINSAW_VERTICAL_SPRITE + CHAINSAW_VERTICAL_SPRITES_TILE_COUNT)
-
-#define FIRST_DUMMY_SPRITE DUMMY_SPRITE_ID
-
-
-/**
- * End sprite groups.
-**/
-
-
-// Animations data for the player's sprite
-static UINT8 PLAYER_SPRITE_ANIM[] = {
-// LEN   FLIP            TILES ID         DIRECTION
-   4,    0, 0, 1, 1,     0, 2,  0,  2,           // Down
-   4,    0, 0, 1, 1,     4, 6,  4,   6,   // Up
-   4,    0, 0, 0, 0,     8, 10, 8, 10,   // Right
-   4,    1, 1, 1, 1,     8, 10, 8, 10,   // Left
-   4,    0, 0, 0, 0,     16, 16, 16, 16,   // dash down
-   4,    0, 0, 0, 0,     12, 12, 12, 12,   // dash up
-   4,    0, 0, 0, 0,     14, 14, 14, 14,   // right
-   4,    1, 1, 1, 1,     14, 14, 14, 14,   // Left
-};
-
-// Offset of the animation of each direction in the global animation data
-#define PLAYER_DIRECTION_DOWN  0
-#define PLAYER_DIRECTION_UP    9
-#define PLAYER_DIRECTION_RIGHT 18
-#define PLAYER_DIRECTION_LEFT  27
-#define PLAYER_DASH_DIRECTION_DOWN 36
-#define PLAYER_DASH_DIRECTION_UP 45
-#define PLAYER_DASH_DIRECTION_RIGHT 54
-#define PLAYER_DASH_DIRECTION_LEFT 63
+#include "animations.h"
 
 // Variables containing player state
 static RECTANGLE player;
@@ -90,8 +31,8 @@ static UINT8 cooldown_dash = 200  ;          //cooldown of the dash (in number o
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
 
-static INT8 scroll_x = 0;  // initial offset because of the UI
-static INT8 scroll_y = 0;
+INT8 scroll_x = 16;  // initial offset because of the UI
+INT8 scroll_y = 0;
 
 // Flip the given sprite on X axis.
 //
@@ -684,12 +625,19 @@ void init_chainsaw_state() {
 
 }
 
-
 void main(void) {
     gen_floor();
 
     load_room();
     reset_doors();
+
+    spawn_enemies(room_number);
+
+
+    for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
+      handle_enemy_walk(&enemy_stack[i]);
+      display_enemy(&enemy_stack[i], enemy_stack[i].xpos, enemy_stack[i].ypos);
+    }
 
     init_player_state();
     init_dash_state();
@@ -697,9 +645,8 @@ void main(void) {
     init_graphics();
 	
     // Loading self-attacking enemy (two attacks/second)
-    ENEMY basic;
-    init_enemy(&basic, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, 1, ENEMY_ATTACK_NONE, 2, 8, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
-    display_enemy(&basic, 72, 80);
+    //ENEMY basic;
+    //display_enemy(&basic, 72, 80);
 
     while (1) {
       // Wait for v-blank (screen refresh)
@@ -743,15 +690,19 @@ void main(void) {
               PLAYER_SPRITE_ANIM,
               player_direction,
               player_animation_frame);
+
+      for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
+      //  handle_enemy_walk(&enemy_stack[i]);
+      }
           
       // SECTION HANDLING ENEMIES
       // If there are several enemies, the following is to be done with EACH enemy that is alive.
-      if (basic.health > 0) { // Enemy is alive: handle its walk and its attack
+      /*if (basic.health > 0) { // Enemy is alive: handle its walk and its attack
         handle_enemy_walk(&basic);
         handle_enemy_attack(&basic);
       } else {
         // Enemy about to die: play death animation.
         enemy_death(&basic);
-      }
+      }*/
     }
 }

@@ -1,4 +1,6 @@
 #include <gb/gb.h>
+#include "enemy_monster.h"
+#include "enemy_spawner.h"
 
 #ifndef _GLOBAL_H
 #define _GLOBAL_H
@@ -34,5 +36,8 @@ typedef struct {
 } FLOOR;
 
 extern FLOOR base_floor;
+
+extern INT8 scroll_x;
+extern INT8 scroll_y;
 
 #endif

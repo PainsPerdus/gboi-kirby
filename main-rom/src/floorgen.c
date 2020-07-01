@@ -293,7 +293,7 @@ void gen_floor() {
                 base_floor.rooms[i].doors[j].is_open = TRUE;
             }
         }
-        gen_room(&base_floor.rooms[i]);
+        gen_room(&base_floor.rooms[i], i);
     }
 
 }

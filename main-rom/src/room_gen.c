@@ -3,6 +3,7 @@
 #include <rand.h>
 #include "tileset.h"
 #include "global.h"
+#include "enemy_spawner.h"
 
 #include "chunks0.h"
 #include "chunks1.h"
@@ -24,8 +25,6 @@ UBYTE urand() {
     return (UBYTE) rand();
 }
 
-///// HANDCRAFTED CHUNKS
-
 #define NB_TWO_DOORS_PREFABS CHUNK_COUNT2
 #define NB_ONE_DOOR_PREFABS CHUNK_COUNT1
 #define NB_NO_DOOR_PREFAB CHUNK_COUNT0
@@ -33,10 +32,13 @@ UBYTE urand() {
 
 static PREFAB buffer;
 
-
 static UINT8 clutter_budget = 0;
 #define MAX_CLUTTER_BUDGET 20
 
+static UINT8 current_room_ptr;
+
+static ENEMY_SPAWNER spawner_buffer[MAX_ENEMY_NB];
+static UINT8 spawner_buffer_ptr = 0;
 
 /**
  * @brief Decompress chunklist[index]
@@ -49,9 +51,24 @@ static void get_chunk(const UINT8 chunk_list[][33], UBYTE index, CHUNK output) {
     for (UINT8 i = 0; i < 32; i++) {
         UINT8 tile1 = (chunk_list[index][i] >> 4);
         UINT8 tile2 = chunk_list[index][i] & 0x0F;
-        buffer.chunk[(i << 1)] = tile1 < 10 ? tile1 : 0;
-        buffer.chunk[(i << 1) + 1] = tile2 < 10 ? tile2 : 0;
+        if (tile1 < 10) {
+            buffer.chunk[i << 1] = tile1;
+        } else {
+            buffer.chunk[i << 1] = 0;
+            spawner_buffer[spawner_buffer_ptr].pos = (i << 1);
+            spawner_buffer[spawner_buffer_ptr].id = tile1;
+            spawner_buffer_ptr++;
+        }
+        if (tile2 < 10) {
+            buffer.chunk[(i << 1) + 1] = tile2;
+        } else {
+            buffer.chunk[(i << 1) + 1] = 0;
+            spawner_buffer[spawner_buffer_ptr].pos = (i << 1) + 1;
+            spawner_buffer[spawner_buffer_ptr].id = tile2;
+            spawner_buffer_ptr++;
+        }
     }
+
 
     UINT8 last = chunk_list[index][32];
     buffer.top_door_flag = (last & 0x80) != 0;
@@ -137,7 +154,7 @@ const UBYTE FLIP_Y_MATRIX[64] = {
      0, 1, 2, 3, 4, 5, 6, 7,
 };
 
-const UBYTE ROT_RIGHT_MATRIX[64] = {
+const UBYTE ROT_LEFT_MATRIX[64] = {
     56,48,40,32,24,16, 8, 0,
     57,49,41,33,25,17, 9, 1,
     58,50,42,34,26,18,10, 2,
@@ -148,7 +165,7 @@ const UBYTE ROT_RIGHT_MATRIX[64] = {
     63,55,47,39,31,23,15, 7
 };
 
-const UBYTE ROT_LEFT_MATRIX[64] = {
+const UBYTE ROT_RIGHT_MATRIX[64] = {
      7,15,23,31,39,47,55,63,
      6,14,22,30,38,46,54,62,
      5,13,21,29,37,45,53,61,
@@ -194,7 +211,10 @@ const UBYTE IDENTITY_MATRIX[64] = {
 
 static void apply_transformation(const UBYTE matrix[], CHUNK input, CHUNK output) {
     for (UBYTE i = 0; i < 64; i++) {
-        output[i] = input[matrix[i]];
+        output[matrix[i]] = input[i];
+    }
+    for (UBYTE i = 0; i < spawner_buffer_ptr; i++) {
+        spawner_buffer[i].pos = matrix[spawner_buffer[i].pos];
     }
 }
 
@@ -276,14 +296,27 @@ static void write_chunk_to_small_room(CHUNK chunk, ROOM* room, UBYTE offset) {
     }
 }
 
+static void flush_spawn_buffer(UINT8 x_offset, UINT8 y_offset) {
+    UINT8 x;
+    UINT8 y;
+    for (UBYTE i = 0; i < spawner_buffer_ptr; i++) {
+        x = spawner_buffer[i].pos & 7;
+        y = spawner_buffer[i].pos >> 3;
+        push_enemy_spawner(current_room_ptr, (x + x_offset) + ((y + y_offset) << 4), spawner_buffer[i].id);
+    }
+    spawner_buffer_ptr = 0;
+}
+
 static CHUNK chunk_buffer = {0};
 
 
 #define HAS_DOOR(r,d) ((r)->doors[(d)].keys[0] + (r)->doors[(d)].keys[1] + (r)->doors[(d)].keys[2]) < 3
 
 
-void gen_room(ROOM* room) {
+void gen_room(ROOM* room, UINT8 room_ptr) {
     clutter_budget = MAX_CLUTTER_BUDGET;
+
+    current_room_ptr = room_ptr;
 
     // top-left, top-right, bottom-left, bottom-right
     BOOLEAN left_door = HAS_DOOR(room, LEFT);
@@ -293,10 +326,14 @@ void gen_room(ROOM* room) {
 
     get_top_left_chunk(left_door, top_door, chunk_buffer);
     write_chunk_to_small_room(chunk_buffer, room, 0);
+    flush_spawn_buffer(0, 0);
     get_top_right_chunk(top_door, right_door, chunk_buffer);
     write_chunk_to_small_room(chunk_buffer, room, 8);
+    flush_spawn_buffer(8, 0);
     get_bottom_right_chunk(right_door, bottom_door, chunk_buffer);
     write_chunk_to_small_room(chunk_buffer, room, 136);
+    flush_spawn_buffer(8, 8);
     get_bottom_left_chunk(bottom_door, left_door, chunk_buffer);
     write_chunk_to_small_room(chunk_buffer, room, 128);
+    flush_spawn_buffer(0, 8);
 }
