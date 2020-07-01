@@ -136,7 +136,7 @@ static UINT8 step1_dash;
 static UINT8 step2_dash;
 static UINT8 step3_dash;
 static UINT8 compteur_dash;
-static UINT8 cooldown = 255;
+static UINT8 cooldown = 70;
 
 static BOOLEAN is_dashing;
 
@@ -146,9 +146,9 @@ static UINT8 sawchain_cooldown = 100;
 
 static UINT8 sawchain_relativ_x;
 static UINT8 sawchain_relativ_y;
-static UINT8 sawchain_animation_length = 75;
-static UINT8 sawchain_animation_part1 = 25;
-static UINT8 sawchain_animation_part2 = 50;
+static UINT8 sawchain_animation_length = 18;
+static UINT8 sawchain_animation_part1 = 6;
+static UINT8 sawchain_animation_part2 = 12;
 
 
 
@@ -187,16 +187,17 @@ void read_input() {
           compteur_dash = 0;
 
  
-          dx = dx + dx;
+          dx = dx + dx;                     //to decoment if you want a faster dash
           dy = dy + dy;
           }
       }
-      if(keys & J_A){
+      
+    }
+    if(keys & J_A){
         if (sawchain_frame_counter > sawchain_cooldown){
           sawchain_frame_counter = 0;
         }
       }
-    }
 
 }
 
@@ -265,15 +266,15 @@ void handle_dash() {
   // If the player is dashing, he can't control his movement anymore
   // after x iterations of the dashing code, we set is_dashing to 0 and that ends the dash
   if (is_dashing) {
-    longueur_dash = 12;
-    step1_dash = 4;
-    step2_dash = 7;
-    step3_dash = 9;
+    longueur_dash = 20;
+    step1_dash = 5;
+    step2_dash = 10;
+    step3_dash = 15;
 
     // The length of the dash is reduced if the movement is diagonal.
     if (dx != 0 && dy != 0){
-      longueur_dash = 8;
-      step1_dash = 2;
+      longueur_dash = 27;
+      step1_dash = 8;
       step2_dash = 4;
       step3_dash = 6;
     }
@@ -290,8 +291,8 @@ void handle_dash() {
       dy = dy + dy;
     }
     if (compteur_dash == step2_dash){
-      dx = dx + dx;
-      dy = dy + dy;
+      //dx = dx + dx;
+      //dy = dy + dy;
     }
     if (compteur_dash == step3_dash){
       // The caracter slows down at the end of the dash
@@ -312,12 +313,12 @@ void handle_sawchain() {
     sawchain_frame_counter += 1;
   }
   if (sawchain_frame_counter < sawchain_animation_part1){ //sawchain part 1
-    if (player_direction == PLAYER_DIRECTION_LEFT ) {
+    if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
       sawchain_relativ_x = 10;
       sawchain_relativ_y = 5;
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
     }
-    if (player_direction == PLAYER_DIRECTION_RIGHT) {
+    if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
       sawchain_relativ_x = 250;
       sawchain_relativ_y = 5;
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
@@ -327,7 +328,7 @@ void handle_sawchain() {
     set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID);
   }
   if (sawchain_frame_counter > sawchain_animation_part1){    //wwoosh 
-    if (player_direction == PLAYER_DIRECTION_LEFT) {
+    if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
       sawchain_relativ_x = 248;
       sawchain_relativ_y = 252;
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
@@ -335,7 +336,7 @@ void handle_sawchain() {
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 4);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
     }
-    if (player_direction == PLAYER_DIRECTION_RIGHT) {
+    if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
       sawchain_relativ_x = 0;
       sawchain_relativ_y = 250 ;
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
@@ -346,14 +347,14 @@ void handle_sawchain() {
      
   }
   if (sawchain_frame_counter > sawchain_animation_part2){
-    if (player_direction == PLAYER_DIRECTION_LEFT) {
+    if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
       sawchain_relativ_x = 241;
       sawchain_relativ_y = 3;
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 8);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 6);
     }
-    if (player_direction == PLAYER_DIRECTION_RIGHT) {
+    if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
       sawchain_relativ_x = 7;
       sawchain_relativ_y = 3;
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
