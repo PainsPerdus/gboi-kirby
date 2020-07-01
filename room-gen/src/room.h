@@ -15,6 +15,7 @@ typedef enum { EMPTY, WALL, SPIKES, HOLE } TILE;
 typedef struct {
     BOOLEAN open;
     BOOLEAN keys[3];
+    UINT8 ptr;
 } DOORS;
 
 
@@ -29,6 +30,9 @@ typedef struct {
     };
 } ROOM;
 
+ROOM base_floor[1];
+
 TILE* get_room_tiles(ROOM* room);
+
 
 #endif

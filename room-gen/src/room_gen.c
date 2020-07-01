@@ -1,7 +1,6 @@
 #include <gb/gb.h>
 #include <string.h>
 #include <rand.h>
-#include "tileset.h"
 #include "room.h"
 
 #include "chunks0.h"
@@ -275,10 +274,7 @@ static void write_chunk_to_small_room(CHUNK chunk, ROOM* room, UBYTE offset) {
     }
 }
 
-static CHUNK top_left = {0};
-static CHUNK top_right = {0};
-static CHUNK bottom_left = {0};
-static CHUNK bottom_right = {0};
+static CHUNK chunk_buffer = {0};
 
 
 #define HAS_DOOR(r,d) ((r)->doors[(d)].keys[0] + (r)->doors[(d)].keys[1] + (r)->doors[(d)].keys[2]) < 3
@@ -293,65 +289,12 @@ void gen_room(ROOM* room) {
     BOOLEAN right_door = HAS_DOOR(room, DOOR_RIGHT);
     BOOLEAN bottom_door = HAS_DOOR(room, DOOR_BOTTOM);
 
-    get_top_left_chunk(left_door, top_door, top_left);
-    get_top_right_chunk(top_door, right_door, top_right);
-    get_bottom_right_chunk(right_door, bottom_door, bottom_right);
-    get_bottom_left_chunk(bottom_door, left_door, bottom_left);
-
-    // Merge all chunks into the map
-    write_chunk_to_small_room(top_left, room, 0);
-    write_chunk_to_small_room(top_right, room, 8);
-    write_chunk_to_small_room(bottom_left, room, 128);
-    write_chunk_to_small_room(bottom_right, room, 136);
-}
-
-static ROOM room = {
-    .doors = {
-        {0, {1, 1, 1}},
-        {0, {1, 1, 1}},
-        {0, {1, 1, 1}},
-        {0, {1, 1, 1}}
-    },
-    .is_small = TRUE,
-    .small_tiles = {EMPTY}
-};
-
-static TILE background_filler[18*18] = {
-    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-    4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
-};
-
-int main(void) {
-    initrand(42);
-
-    set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
-    set_bkg_tiles(2, 0, 18, 18, background_filler);
-
-    SHOW_BKG;
-
-    while (1) {
-        waitpad(J_LEFT);
-        waitpadup();
-        gen_room(&room);
-        set_bkg_tiles(3, 1, 16, 16, get_room_tiles(&room));
-    }
-
-
-    return 0;
+    get_top_left_chunk(left_door, top_door, chunk_buffer);
+    write_chunk_to_small_room(chunk_buffer, room, 0);
+    get_top_right_chunk(top_door, right_door, chunk_buffer);
+    write_chunk_to_small_room(chunk_buffer, room, 8);
+    get_bottom_right_chunk(right_door, bottom_door, chunk_buffer);
+    write_chunk_to_small_room(chunk_buffer, room, 136);
+    get_bottom_left_chunk(bottom_door, left_door, chunk_buffer);
+    write_chunk_to_small_room(chunk_buffer, room, 128);
 }
