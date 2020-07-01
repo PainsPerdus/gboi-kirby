@@ -43,7 +43,7 @@ intelligent is it? Well it can... die?
 After randomly poking around for a while, I stumbled upon how to modify global
 variables in inline assembly. Here's some minimal code:
 
-```C
+```c
 UINT8 var = 42;
 static UINT8 static_var = 0;  // it works with static variables too
 
