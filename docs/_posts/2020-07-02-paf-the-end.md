@@ -15,11 +15,13 @@ ones ;] ) for a little demo in front of other people. We can definitely be proud
 of our playable game (albeit somewhat buggy, but pssh...), which came to life in
 less than two weeks!
 
+You can [try it out](https://github.com/PainsPerdus/gboi-kirby/releases/tag/1.0)
+by downloading our ROM and running it under a Game Boy emulator (we use
+[SameBoy](https://sameboy.github.io/), but here's a little demo (with sound!):
 
-
-
-<img height="400" src="/gboi-kirby/assets/img/titlescreen.png" />
-
+<video controls height="400" >
+  <source src="/gboi-kirby/assets/1.0-demo.mp4" type="video/mp4">
+</video>
 
 
 ## Successful ~~last-minute~~ integrations
@@ -41,6 +43,8 @@ less than two weeks!
 
 
 ## Failur... uh, I mean, setbacks
+
+<img height="400" src="/gboi-kirby/assets/img/titlescreen.png" />
 
 The **title screen** (see above) oozes cuteness and psychopathy, thanks to
 [@Ametheek][4] artistic touch, and was supposed to double as a way to initialize
