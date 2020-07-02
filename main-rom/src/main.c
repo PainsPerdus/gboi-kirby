@@ -340,6 +340,8 @@ void read_input() {
     if(keys & J_A){
         if (chainsaw_frame_counter > chainsaw_cooldown){
           chainsaw_frame_counter = 0;
+
+          play_chainsaw_attack_sound();
         }
       }
 
