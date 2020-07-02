@@ -1,3 +1,4 @@
 src/*.sprites.*
 src/*tileset.*
 src/chunks*
+*.xcf
