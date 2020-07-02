@@ -137,11 +137,11 @@ static RECTANGLE door_hitboxes[4];
 
 static UINT8 chainsaw_frame_counter = 150;
 
-static UINT8 chainsaw_cooldown = 100;
+static UINT8 chainsaw_cooldown = 30;
 
 static UINT8 chainsaw_relativ_x;
 static UINT8 chainsaw_relativ_y;
-static UINT8 chainsaw_animation_length = 20;
+static UINT8 chainsaw_animation_length = 18;
 static UINT8 chainsaw_animation_part1 = 7;
 static UINT8 chainsaw_animation_part2 = 14;
 static UINT8 offset_chainsaw = 0;                 //for the 2 sprites high image, we have to move one part from the other, depending of the orientation
@@ -835,6 +835,49 @@ void start_screen() {
 
 
 
+static RECTANGLE chainsaw_hitbox;
+static RECTANGLE enemy_hitbox;
+
+void handle_chainsaw_attack() {
+  if (chainsaw_frame_counter == chainsaw_animation_part2) {
+    chainsaw_hitbox.size.w = 12;
+    chainsaw_hitbox.size.h = 12;
+
+    switch (player_direction) {
+      case PLAYER_DIRECTION_UP:
+        chainsaw_hitbox.pos.x = player.pos.x - 2;
+        chainsaw_hitbox.pos.y = player.pos.y - 12;
+        
+      break;
+      case PLAYER_DIRECTION_DOWN:
+        chainsaw_hitbox.pos.x = player.pos.x - 2;
+        chainsaw_hitbox.pos.y = player.pos.y + 8;
+      break;
+      case PLAYER_DIRECTION_LEFT:
+        chainsaw_hitbox.pos.x = player.pos.x - 12;
+        chainsaw_hitbox.pos.y = player.pos.y - 4;
+      break;
+      case PLAYER_DIRECTION_RIGHT:
+        chainsaw_hitbox.pos.x = player.pos.x + 8;
+        chainsaw_hitbox.pos.y = player.pos.y - 4;
+      break;
+      default:
+        break;
+    }
+
+    for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
+      enemy_hitbox.pos.x = enemy_stack[i].xpos;
+      enemy_hitbox.pos.y = enemy_stack[i].ypos;
+      enemy_hitbox.size.w = 16;
+      enemy_hitbox.size.h = 8;
+      
+      if (rect_rect_collision(&chainsaw_hitbox, &enemy_hitbox)) {
+        enemy_hp_loss(&enemy_stack[i], 1);
+      }
+    }
+  }
+}
+
 void main(void) {
     start_screen();
 
@@ -872,6 +915,7 @@ void main(void) {
 
       handle_collisions();
       handle_fall();
+      handle_chainsaw_attack();
 
       // Do NOT move this near update_sprite_animation...
       move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
