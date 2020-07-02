@@ -1,4 +1,7 @@
+#include <stdio.h>
 #include <gb/gb.h>
+
+#include <rand.h>
 
 #include "enemy_monster.h"
 #include "dummy.sprites.h"
@@ -820,7 +823,25 @@ void handle_fall() {
   }
 }
 
+
+void start_screen() {
+    printf("Press START!\n");
+
+    UINT16 frames_elapsed = 0;
+    while (!(joypad() & J_START)) {
+      frames_elapsed++;
+    }
+
+    // Use the human component to initialize RNG :)
+    initarand(frames_elapsed);
+}
+
+
+
+
 void main(void) {
+    start_screen();
+
     borrow_oam_id();  // player
     borrow_oam_id();  // chainsaw1
     borrow_oam_id();  // chainsaw2
