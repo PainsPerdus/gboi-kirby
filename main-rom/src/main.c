@@ -149,15 +149,15 @@ static BOOLEAN is_dashing;
 
 static RECTANGLE door_hitboxes[4];
 
-static UINT8 sawchain_frame_counter = 150;
+static UINT8 chainsaw_frame_counter = 150;
 
-static UINT8 sawchain_cooldown = 100;
+static UINT8 chainsaw_cooldown = 100;
 
-static UINT8 sawchain_relativ_x;
-static UINT8 sawchain_relativ_y;
-static UINT8 sawchain_animation_length = 18;
-static UINT8 sawchain_animation_part1 = 6;
-static UINT8 sawchain_animation_part2 = 12;
+static UINT8 chainsaw_relativ_x;
+static UINT8 chainsaw_relativ_y;
+static UINT8 chainsaw_animation_length = 18;
+static UINT8 chainsaw_animation_part1 = 6;
+static UINT8 chainsaw_animation_part2 = 12;
 
 static UINT8 room_number = 0;
 
@@ -306,8 +306,8 @@ void read_input() {
       
     }
     if(keys & J_A){
-        if (sawchain_frame_counter > sawchain_cooldown){
-          sawchain_frame_counter = 0;
+        if (chainsaw_frame_counter > chainsaw_cooldown){
+          chainsaw_frame_counter = 0;
         }
       }
 
@@ -417,37 +417,37 @@ void handle_dash() {
   }
 }
 
-void handle_sawchain() {
-  if (sawchain_frame_counter < 250){                //to counter overflow
-    sawchain_frame_counter += 1;
+void handle_chainsaw() {
+  if (chainsaw_frame_counter < 250){                //to counter overflow
+    chainsaw_frame_counter += 1;
   }
-  if (sawchain_frame_counter < sawchain_animation_part1){ //sawchain part 1
+  if (chainsaw_frame_counter < chainsaw_animation_part1){ //chainsaw part 1
     if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
-      sawchain_relativ_x = 10;
-      sawchain_relativ_y = 5;
+      chainsaw_relativ_x = 10;
+      chainsaw_relativ_y = 5;
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
     }
     if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
-      sawchain_relativ_x = 250;
-      sawchain_relativ_y = 5;
+      chainsaw_relativ_x = 250;
+      chainsaw_relativ_y = 5;
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
     }   
        
     
     set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID);
   }
-  if (sawchain_frame_counter > sawchain_animation_part1){    //wwoosh 
+  if (chainsaw_frame_counter > chainsaw_animation_part1){    //wwoosh 
     if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
-      sawchain_relativ_x = 248;
-      sawchain_relativ_y = 252;
+      chainsaw_relativ_x = 248;
+      chainsaw_relativ_y = 252;
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID +1);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 4);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
     }
     if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
-      sawchain_relativ_x = 0;
-      sawchain_relativ_y = 250 ;
+      chainsaw_relativ_x = 0;
+      chainsaw_relativ_y = 250 ;
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID +1);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
@@ -455,24 +455,24 @@ void handle_sawchain() {
     }      
      
   }
-  if (sawchain_frame_counter > sawchain_animation_part2){
+  if (chainsaw_frame_counter > chainsaw_animation_part2){
     if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
-      sawchain_relativ_x = 241;
-      sawchain_relativ_y = 3;
+      chainsaw_relativ_x = 241;
+      chainsaw_relativ_y = 3;
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 8);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 6);
     }
     if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
-      sawchain_relativ_x = 7;
-      sawchain_relativ_y = 3;
+      chainsaw_relativ_x = 7;
+      chainsaw_relativ_y = 3;
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 6);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 8);
-    }            //sawchain hiting
+    }            //chainsaw hiting
 
   }
-  if (sawchain_frame_counter > sawchain_animation_length){
+  if (chainsaw_frame_counter > chainsaw_animation_length){
     set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);
     set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);       //put back blank in second sprite of the woosh
   } 
@@ -571,7 +571,7 @@ void init_dash_state() {
 
 }
 
-void init_sawchain_state() {
+void init_chainsaw_state() {
 
     is_dashing = 0;
     compteur_dash = 0;
@@ -587,7 +587,7 @@ void main(void) {
 
     init_player_state();
     init_dash_state();
-    init_sawchain_state();
+    init_chainsaw_state();
     init_graphics();
 	
 	// Loading self-attacking enemy (two attacks/second)
@@ -603,14 +603,14 @@ void main(void) {
 
         handle_dash();
 
-        handle_sawchain();
+        handle_chainsaw();
 
         handle_collisions();
 
         // Do NOT move this near update_sprite_animation...
         move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
-        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x + sawchain_relativ_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y + sawchain_relativ_y);
-        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, player.pos.x + SPRITE_OFFSET_X + scroll_x + sawchain_relativ_x + 8, player.pos.y + SPRITE_OFFSET_Y + scroll_y + sawchain_relativ_y);      //for the 16*16 sainwhaw animation
+        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);
+        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x + 8, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 chainsaw animation
 
         // We do not update the animation on each frame: the animation
         // will be too quick. So we skip frames
