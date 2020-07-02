@@ -192,7 +192,9 @@ void reset_doors() {
     UINT16 door_pos2 = room->is_small ? door_positions_small[(i << 1) + 1] : door_positions_big[(i << 1) + 1];
     TILEMAP[door_pos1] = open ? 0 : 4;
     TILEMAP[door_pos2] = open ? 0 : 4;
-    UINT8 size = (room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE) + 2; // why +2?
+    UINT8 size = (room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE) + 2; // +2 because SMALL_ROOM_SIDE
+                                                                         // and BIG_ROOM_SIDE don't take
+                                                                         // the outer walls into account
 
     UINT8 x = (door_pos1 % size);
     UINT8 y = door_pos1 / size;
