@@ -31,7 +31,6 @@ static UINT8 player_animation_frame;
 #define MAX_MOVE_X (TILE_SIZE_PX - 1)
 #define MAX_MOVE_Y (TILE_SIZE_PX - 1)
 
-static UINT8 cooldown_dash = 200  ;          //cooldown of the dash (in number of frame)  (must be < 255)
 
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
@@ -125,12 +124,13 @@ static VEC_DIFF total_diff = {0, 0};
 
 static RECTANGLE block = {{0, 0}, {8, 8}};
 
+static UINT8 dash_cooldown = 30; // in frames
 static UINT8 longueur_dash;
 static UINT8 step1_dash;
 static UINT8 step2_dash;
 static UINT8 step3_dash;
 static UINT8 compteur_dash;
-static UINT8 cooldown = 70;
+static UINT8 dash_frame_counter = 255;
 
 static BOOLEAN is_dashing;
 
@@ -297,8 +297,8 @@ void read_input() {
     // and in which direction
     keys = joypad();
     if (!is_dashing) {
-      if (cooldown < 250){
-          cooldown += 1;
+      if (dash_frame_counter < 250){
+          dash_frame_counter++;
       }
 
       dx = 0;
@@ -306,35 +306,35 @@ void read_input() {
       if (keys & J_UP) {
           player_direction = PLAYER_DIRECTION_UP;
           dy -= 1;
-          add_heart();
+          // add_heart();
 	      // play_falling_sound();
       } if (keys & J_DOWN) {
           player_direction = PLAYER_DIRECTION_DOWN;
           dy += 1;
-          remove_heart();
+          // remove_heart();
 	      // play_hit_sound();
       } if (keys & J_LEFT) {
           player_direction = PLAYER_DIRECTION_LEFT;
           dx -= 1;
-          remove_crystal();
+          // remove_crystal();
 	      // play_dash_sound();
       } if (keys & J_RIGHT) {
           player_direction = PLAYER_DIRECTION_RIGHT;
           dx += 1;
-          add_crystal();
+          // add_crystal();
 	      // play_chainsaw_attack_sound();
       }
 
       if(keys & J_B){
-        if (cooldown > cooldown_dash){
+        if (dash_frame_counter > dash_cooldown){
           player_direction += 36;             //dash tiles = direction tile + 36
           is_dashing = 1;
           compteur_dash = 0;
 
 
-          dx = dx + dx;                     //to decoment if you want a faster dash
+          dx = dx + dx;
           dy = dy + dy;
-          }
+        }
       }
 
     }
@@ -538,9 +538,6 @@ void init_player_state() {
 
 
 void handle_dash() {
-  // TODO for dash: use Nolwenn's sprites.
-  // TODO: add a cooldown.
-
   // If the player is dashing, he can't control his movement anymore
   // after x iterations of the dashing code, we set is_dashing to 0 and that ends the dash
   if (is_dashing) {
@@ -560,7 +557,7 @@ void handle_dash() {
     // End the dash if enough distance has been travelled.
     if (compteur_dash == longueur_dash) {
       is_dashing = 0;
-      cooldown = 0;
+      dash_frame_counter = 0;
     }
 
     // The speed increases during the dash
