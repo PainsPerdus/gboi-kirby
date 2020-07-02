@@ -30,6 +30,8 @@
 #define ENEMY_WIDTH 16
 
 extern RECTANGLE player;
+extern const UINT8 ROOM_WIDTH;
+extern UINT8 TILEMAP[18*18];
 
 typedef struct enemy {
 	UINT8 enemy_sprite_l; // enemy left sprite in the tileset
@@ -47,7 +49,8 @@ typedef struct enemy {
 	RECTANGLE enemy_next_rectangle; // used for future pos attempts
 	UINT8 frames_until_next_step; // also a counter, used to handle walking instead
 	UINT8 walking_animation_state; // manages walking animation
-	UINT8 walking_direction;
+	UINT8 walking_direction; // preferred walking direction
+	UINT8 walking_direction_fallback; // fall back to this if the first attempt didn't work
 	VEC_DIFF diff_with_player;
 	// Unhandled at this point:
 	// - projectile speed (if we decide that it depends on the monster rather than, for example, on how far the player got in the game)
