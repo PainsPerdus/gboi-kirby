@@ -307,28 +307,28 @@ void handle_enemy_walk(ENEMY* unit) {
 				switch (unit->walking_direction) {
 					case WALKING_DIRECTION_UP:
 						// Intervenes in determining neighboring tiles
-						future_tile_offset = unit->enemy_next_rectangle.pos.x & 7;
+						future_tile_offset = unit->enemy_next_rectangle.pos.y & 7;
 						// Check neighboring tiles upwards
 						movement_successful = (!TILEMAP[k] && !TILEMAP[k+1] && (!future_tile_offset || !TILEMAP[k+2])) ? 1 : 0;
 						break;
 						
 					case WALKING_DIRECTION_DOWN:
 						// Intervenes in determining neighboring tiles
-						future_tile_offset = unit->enemy_next_rectangle.pos.x & 7;
+						future_tile_offset = unit->enemy_next_rectangle.pos.y & 7;
 						// Check neighboring tiles downwards
 						movement_successful = (!TILEMAP[k+18] && !TILEMAP[k+19] && (!future_tile_offset || !TILEMAP[k+20])) ? 1 : 0;
 						break;
 						
 					case WALKING_DIRECTION_LEFT:
 						// Intervenes in determining neighboring tiles
-						future_tile_offset = unit->enemy_next_rectangle.pos.y & 7;
+						future_tile_offset = unit->enemy_next_rectangle.pos.x & 7;
 						// Check neighboring tiles leftwards
 						movement_successful = (!TILEMAP[k] && (!future_tile_offset || !TILEMAP[k+18])) ? 1 : 0;
 						break;
 					
 					case WALKING_DIRECTION_RIGHT:
 						// Intervenes in determining neighboring tiles
-						future_tile_offset = unit->enemy_next_rectangle.pos.y & 7;
+						future_tile_offset = unit->enemy_next_rectangle.pos.x & 7;
 						// Check neighboring tiles rightwards
 						movement_successful = (!TILEMAP[k+2] && (!future_tile_offset || !TILEMAP[k+20])) ? 1 : 0;
 						break;
