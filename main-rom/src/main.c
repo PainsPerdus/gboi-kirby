@@ -10,12 +10,43 @@
 #include <string.h>
 #include "floorgen.h"
 #include "chainsaw_lateral.sprites.h"
+#include "chainsaw_vertical.sprites.h"
 
+
+/**
+ * Sprite groups
+**/
+
+// Group 1: player
 #define PLAYER_SPRITE_ID 0
-#define CHAINSAW_TOP_LATERAL_SPRITE_ID (PLAYER_SPRITE_ID + PLAYER_SPRITES_TILE_COUNT)
+
+#define FIRST_PLAYER_SPRITE PLAYER_SPRITE_ID
+
+
+// Group 2: lateral chainsaw
+#define CHAINSAW_TOP_LATERAL_SPRITE_ID (FIRST_PLAYER_SPRITE + PLAYER_SPRITES_TILE_COUNT)
 #define CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID (CHAINSAW_TOP_LATERAL_SPRITE_ID + 2)
 #define CHAINSAW_WOOSH_2_LATERAL_SPRITE_ID (CHAINSAW_WOOSH_1_LATERAL_SPRITE_ID + 2)
-#define DUMMY_SPRITE_ID (CHAINSAW_TOP_LATERAL_SPRITE_ID + CHAINSAW_LATERAL_SPRITES_TILE_COUNT)
+
+
+#define FIRST_CHAINSAW_LATERAL_SPRITE CHAINSAW_TOP_LATERAL_SPRITE_ID
+
+
+// Group 3: vertical chainsaw
+#define CHAINSAW_VERTICAL_SPRITE_ID (FIRST_CHAINSAW_LATERAL_SPRITE + CHAINSAW_LATERAL_SPRITES_TILE_COUNT)
+
+#define FIRST_CHAINSAW_VERTICAL_SPRITE CHAINSAW_VERTICAL_SPRITE_ID
+
+
+// Group 4: dummy
+#define DUMMY_SPRITE_ID (FIRST_CHAINSAW_VERTICAL_SPRITE + CHAINSAW_VERTICAL_SPRITES_TILE_COUNT)
+
+#define FIRST_DUMMY_SPRITE DUMMY_SPRITE_ID
+
+
+/**
+ * End sprite groups.
+**/
 
 
 // Animations data for the player's sprite
@@ -75,6 +106,16 @@ void flip_sprite_horiz(UINT8 sprite_id) {
 void unflip_sprite_horiz(UINT8 sprite_id) {
     set_sprite_prop(sprite_id, get_sprite_prop(sprite_id) & ~S_FLIPX);
 }
+
+
+void flip_sprite_vert(UINT8 sprite_id) {
+    set_sprite_prop(sprite_id, get_sprite_prop(sprite_id) | S_FLIPY);
+}
+
+void unflip_sprite_vert(UINT8 sprite_id) {
+    set_sprite_prop(sprite_id, get_sprite_prop(sprite_id) & ~S_FLIPY);
+}
+
 
 // Update the tiles of the sprite to animate it.
 //
@@ -155,9 +196,10 @@ static UINT8 chainsaw_cooldown = 100;
 
 static UINT8 chainsaw_relativ_x;
 static UINT8 chainsaw_relativ_y;
-static UINT8 chainsaw_animation_length = 18;
-static UINT8 chainsaw_animation_part1 = 6;
-static UINT8 chainsaw_animation_part2 = 12;
+static UINT8 chainsaw_animation_length = 20;
+static UINT8 chainsaw_animation_part1 = 7;
+static UINT8 chainsaw_animation_part2 = 14;
+static UINT8 offset_chainsaw = 0;                 //for the 2 sprites high image, we have to move one part from the other, depending of the orientation
 
 static UINT8 room_number = 0;
 
@@ -181,7 +223,7 @@ static const UINT8 close_door_tiles[2] = {4, 4};
 
 /**
  * @brief Replace door tiles
- * 
+ *
  * Call this when doors have been opened / closed
  */
 void reset_doors() {
@@ -234,16 +276,16 @@ void check_doors() {
       load_room();
       load_tilemap();
       reset_doors();
-      
+
       room = &base_floor.rooms[room_number];
-      UINT8 size = room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;  
+      UINT8 size = room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE;
 
       switch (i) {
-        case LEFT: 
+        case LEFT:
           player.pos.x = (size - 2) << 3;
           player.pos.y = size << 2;
           break;
-        
+
         case RIGHT:
           player.pos.x = 8;
           player.pos.y = size << 2;
@@ -260,7 +302,7 @@ void check_doors() {
           break;
       }
       return;
-    } 
+    }
   }
 }
 
@@ -300,12 +342,12 @@ void read_input() {
           is_dashing = 1;
           compteur_dash = 0;
 
- 
+
           dx = dx + dx;                     //to decoment if you want a faster dash
           dy = dy + dy;
           }
       }
-      
+
     }
     if(keys & J_A){
         if (chainsaw_frame_counter > chainsaw_cooldown){
@@ -317,12 +359,12 @@ void read_input() {
 
 
 void init_graphics() {
-    // Load sprites' tiles in video memory (player, chainsaw)
-    set_sprite_data(PLAYER_SPRITE_ID, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
-    set_sprite_data(PLAYER_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES);
-	// Load dummy enemy in video memory
-	set_sprite_data(PLAYER_SPRITES_TILE_COUNT + CHAINSAW_LATERAL_SPRITES_TILE_COUNT, DUMMY_SPRITES_TILE_COUNT, DUMMY_SPRITES);
-	
+    // Load sprites' tiles in video memory
+    set_sprite_data(FIRST_PLAYER_SPRITE, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
+    set_sprite_data(FIRST_CHAINSAW_LATERAL_SPRITE, CHAINSAW_LATERAL_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES);
+    set_sprite_data(FIRST_CHAINSAW_VERTICAL_SPRITE, CHAINSAW_VERTICAL_SPRITES_TILE_COUNT ,CHAINSAW_VERTICAL_SPRITES);
+    set_sprite_data(FIRST_DUMMY_SPRITE, DUMMY_SPRITES_TILE_COUNT, DUMMY_SPRITES);
+
     // Use 8x16 sprites
     SPRITES_8x16;
     // Makes sprites "layer" visible
@@ -420,25 +462,40 @@ void handle_dash() {
 }
 
 void handle_chainsaw() {
-  if (chainsaw_frame_counter < 250){                //to counter overflow
+  reset_chainsaw();
+
+  // Guarding against overflows.
+  if (chainsaw_frame_counter < 255 ){
     chainsaw_frame_counter += 1;
   }
-  if (chainsaw_frame_counter < chainsaw_animation_part1){ //chainsaw part 1
+
+  if (chainsaw_frame_counter < chainsaw_animation_part1) {
     if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
       chainsaw_relativ_x = 10;
       chainsaw_relativ_y = 5;
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
-    }
-    if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID);
+    } else if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
       chainsaw_relativ_x = 250;
       chainsaw_relativ_y = 5;
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
-    }   
-       
-    
-    set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID);
+    } else if (player_direction == PLAYER_DIRECTION_UP || player_direction == PLAYER_DASH_DIRECTION_UP) {
+      chainsaw_relativ_x = 251;
+      chainsaw_relativ_y = 263;
+      flip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_VERTICAL_SPRITE_ID);
+    } else if (player_direction == PLAYER_DIRECTION_DOWN || player_direction == PLAYER_DASH_DIRECTION_DOWN) {
+      chainsaw_relativ_x = 8;
+      chainsaw_relativ_y = 253;
+      unflip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_VERTICAL_SPRITE_ID);
+    }
   }
-  if (chainsaw_frame_counter > chainsaw_animation_part1){    //wwoosh 
+
+
+  // Wooosh
+  if (chainsaw_frame_counter > chainsaw_animation_part1) {
     if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
       chainsaw_relativ_x = 248;
       chainsaw_relativ_y = 252;
@@ -454,33 +511,80 @@ void handle_chainsaw() {
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID +1);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 4);
-    }      
-     
+    }
+
+    if (player_direction == PLAYER_DIRECTION_UP || player_direction == PLAYER_DASH_DIRECTION_UP) {
+      chainsaw_relativ_x = 249;
+      chainsaw_relativ_y = 247;
+      flip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      flip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_VERTICAL_SPRITE_ID + 4);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 2, CHAINSAW_VERTICAL_SPRITE_ID + 2);
+      offset_chainsaw = 0;
+    }
+    if (player_direction == PLAYER_DIRECTION_DOWN || player_direction == PLAYER_DASH_DIRECTION_DOWN) {
+      chainsaw_relativ_x = 8;
+      chainsaw_relativ_y = 253;
+      unflip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      unflip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_VERTICAL_SPRITE_ID + 2);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 2, CHAINSAW_VERTICAL_SPRITE_ID + 4);
+      offset_chainsaw = 2;
+    }
+
+
   }
+
+  // Chainsaw hit
   if (chainsaw_frame_counter > chainsaw_animation_part2){
+    // "put back blank in second sprite of the woosh"
+    set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 2, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);
+
     if (player_direction == PLAYER_DIRECTION_LEFT || player_direction == PLAYER_DASH_DIRECTION_LEFT) {
       chainsaw_relativ_x = 241;
       chainsaw_relativ_y = 3;
       flip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 8);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 6);
-    }
-    if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
+    } else if (player_direction == PLAYER_DIRECTION_RIGHT || player_direction == PLAYER_DASH_DIRECTION_RIGHT) {
       chainsaw_relativ_x = 7;
       chainsaw_relativ_y = 3;
       unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID + 6);
       set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID + 8);
-    }            //chainsaw hiting
+    } else if (player_direction == PLAYER_DIRECTION_UP || player_direction == PLAYER_DASH_DIRECTION_UP) {
+      chainsaw_relativ_x = 249;
+      chainsaw_relativ_y = 252;
+      flip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_VERTICAL_SPRITE_ID +6);
+    } else if (player_direction == PLAYER_DIRECTION_DOWN || player_direction == PLAYER_DASH_DIRECTION_DOWN) {
+      chainsaw_relativ_x = 8;
+      chainsaw_relativ_y = 10;
+      unflip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+      set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_VERTICAL_SPRITE_ID + 6);
+    }
 
   }
-  if (chainsaw_frame_counter > chainsaw_animation_length){
-    set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);
-    set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);       //put back blank in second sprite of the woosh
-  } 
-  
+
+  if (chainsaw_frame_counter > chainsaw_animation_length) {
+    reset_chainsaw();
+  }
+
 }
 
+
+// reset all sprites id   (to fix a bunch of bugs)
+void reset_chainsaw(){
+  unflip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+  unflip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1);
+  unflip_sprite_vert(CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
+  unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID);
+  unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1);
+  unflip_sprite_horiz(CHAINSAW_TOP_LATERAL_SPRITE_ID + 2);
+  set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);
+  set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 1, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);
+  set_sprite_tile(CHAINSAW_TOP_LATERAL_SPRITE_ID + 2, CHAINSAW_TOP_LATERAL_SPRITE_ID - 2);
+}
 
 
 void handle_collisions() {
@@ -591,7 +695,7 @@ void main(void) {
     init_dash_state();
     init_chainsaw_state();
     init_graphics();
-	
+
 	// Loading self-attacking enemy (two attacks/second)
 	ENEMY basic;
 	init_enemy(&basic, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, 1, ENEMY_ATTACK_NONE, 2, 8, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
@@ -611,8 +715,12 @@ void main(void) {
 
         // Do NOT move this near update_sprite_animation...
         move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
+
+        // Some saw assets are 16x16 and therefore require two side-by-side 8x16 sprites.
         move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);
         move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x + 8, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 chainsaw animation
+
+        move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+2,offset_chainsaw + player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x,16+ player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 sainwhaw animation
 
         // We do not update the animation on each frame: the animation
         // will be too quick. So we skip frames
@@ -635,7 +743,7 @@ void main(void) {
                 PLAYER_SPRITE_ANIM,
                 player_direction,
                 player_animation_frame);
-          
+
       // SECTION HANDLING ENEMIES
       // If there are several enemies, the following is to be done with EACH enemy that is alive.
       if (basic.health > 0) { // Enemy is alive: handle its walk and its attack
