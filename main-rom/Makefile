@@ -44,7 +44,7 @@ assets:
 		--output-image=src/chainsaw_vertical.sprites.png \
 		--sprite8x16 \
 		--name CHAINSAW_VERTICAL_SPRITES \
-		./chainsaw_vertical.png
+		./img/chainsaw_vertical.png
 	$(IMG2GB) tileset \
 		--output-c-file=src/dummy.sprites.c \
 		--output-header-file=src/dummy.sprites.h \
