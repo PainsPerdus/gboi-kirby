@@ -72,6 +72,8 @@ void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos) {
 
 // Handles all steps of the enemy death sequence
 void enemy_death(ENEMY* unit) {
+	if (unit->dying_animation_state == 50)
+		return;
 	switch(unit->dying_animation_state) {
 		case 1: // Make the enemy disappear temporarily
 		case 13:
@@ -93,7 +95,7 @@ void enemy_death(ENEMY* unit) {
 			break;
 	}
 	
-	if (unit->dying_animation_state < 49)
+	if (unit->dying_animation_state <= 49)
 		unit->dying_animation_state++;
 }
 
