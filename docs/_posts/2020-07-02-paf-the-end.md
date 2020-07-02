@@ -93,7 +93,7 @@ fine-tuning for it to be consistent!).
 > And in fact, I should be talking about multiple _Jaw Pears_ now.
 [@ChatPion][2] implemented proper internal management for multiple foes, and
 that includes handling enemy spawning for each room in the map! And while these
-foes are rather harmless, you are locked with them in your room until you
+foes are mostly harmless, you are locked with them in your room until you
 take them out with your chainsaw. And really, don't get fooled by how
 harmless _Jaw Pear_ seems to be for now. There is only so much this soft
 fruit of destruction can learn about close combat with some practice!
