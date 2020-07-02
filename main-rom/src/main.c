@@ -409,7 +409,8 @@ static UINT8 crystal_count = 0;
 // XXX: hardcoded... should be relative.
 #define HEART_TILE 0x14
 #define CRYSTAL_TILE 0x15
-#define EMPTY_STAT_TILE 0x16
+#define EMPTY_HEART_TILE 0x16
+#define EMPTY_CRYSTAL_TILE 0x17
 
 void load_win_tilemap();
 
@@ -422,7 +423,7 @@ void set_hearts(UINT8 x) {
 
   // Empty tiles.
   while (i < (MAX_HEARTS - heart_count)) {
-    WINDOW_TILEMAP[(i << 1)] = EMPTY_STAT_TILE;
+    WINDOW_TILEMAP[(i << 1)] = EMPTY_HEART_TILE;
     i++;
   }
 
@@ -443,7 +444,7 @@ void set_crystals(UINT8 x) {
 
   // Empty tiles.
   while (i < (MAX_HEARTS - crystal_count)) {
-    WINDOW_TILEMAP[(i << 1) + 1] = EMPTY_STAT_TILE;
+    WINDOW_TILEMAP[(i << 1) + 1] = EMPTY_CRYSTAL_TILE;
     i++;
   }
 
