@@ -219,8 +219,8 @@ void load_room() {
 void load_enemies() {
   for (UINT8 i = 0; i < enemy_stack_ptr; i++) 
     enemy_release(&enemy_stack[i]);
-  enemy_stack_ptr = 0;
-  spawn_enemies(room_number);
+    enemy_stack_ptr = 0;
+    spawn_enemies(room_number);
 
   for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
     display_enemy(&enemy_stack[i], enemy_stack[i].xpos, enemy_stack[i].ypos);
