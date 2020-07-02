@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <gb/gb.h>
 
 #include <rand.h>
@@ -822,11 +821,11 @@ void handle_fall() {
 
 
 void start_screen() {
-    printf("Press START!\n");
-
-    UINT16 frames_elapsed = 0;
+    UINT8 frames_elapsed = 0;
     while (!(joypad() & J_START)) {
       frames_elapsed++;
+      if (frames_elapsed > 250)
+        frames_elapsed = 0;
     }
 
     // Use the human component to initialize RNG :)
