@@ -59,7 +59,7 @@ static UINT8 cooldown_dash = 200  ;          //cooldown of the dash (in number o
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
 
-static INT8 scroll_x = 16;  // initial offset because of the UI
+static INT8 scroll_x = 0;  // initial offset because of the UI
 static INT8 scroll_y = 0;
 
 // Flip the given sprite on X axis.
@@ -170,7 +170,7 @@ FLOOR base_floor;
  * WON't WORK FOR BIG ROOMS
  */
 void load_tilemap() {
-    set_bkg_tiles(2, 0, 18, 18, TILEMAP);
+    set_bkg_tiles(0, 0, 18, 18, TILEMAP);
 }
 
 static const UINT16 door_positions_small[8] = {8, 9, 17*18+8, 17*18+9, 8*18, 9*18, 9*18-1, 10*18-1};
@@ -192,7 +192,7 @@ void reset_doors() {
     UINT16 door_pos2 = room->is_small ? door_positions_small[(i << 1) + 1] : door_positions_big[(i << 1) + 1];
     TILEMAP[door_pos1] = open ? 0 : 4;
     TILEMAP[door_pos2] = open ? 0 : 4;
-    UINT8 size = (room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE) + 2;
+    UINT8 size = (room->is_small ? SMALL_ROOM_SIDE : BIG_ROOM_SIDE) + 2; // why +2?
 
     UINT8 x = (door_pos1 % size);
     UINT8 y = door_pos1 / size;
@@ -204,7 +204,7 @@ void reset_doors() {
     door_hitboxes[i].size.w = w << 3;
     door_hitboxes[i].size.h = h << 3;
 
-    set_bkg_tiles(x + 2, y, w, h, open ? open_door_tiles : close_door_tiles);
+    set_bkg_tiles(x, y, w, h, open ? open_door_tiles : close_door_tiles);
   }
 }
 
