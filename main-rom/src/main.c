@@ -5,6 +5,7 @@
 #include "player.sprites.h"
 #include "collision.h"
 #include "tileset.h"
+#include "ui_tileset.h"
 #include "sound_effect.h"
 #include "global.h"
 #include <string.h>
@@ -283,6 +284,11 @@ void check_doors() {
   }
 }
 
+
+void add_heart();
+void remove_heart();
+
+
 void read_input() {
     // Read joypad keys to know if the player is walking
     // and in which direction
@@ -297,18 +303,22 @@ void read_input() {
       if (keys & J_UP) {
           player_direction = PLAYER_DIRECTION_UP;
           dy -= 1;
+          add_heart();
 	      // play_falling_sound();
       } if (keys & J_DOWN) {
           player_direction = PLAYER_DIRECTION_DOWN;
           dy += 1;
+          remove_heart();
 	      // play_hit_sound();
       } if (keys & J_LEFT) {
           player_direction = PLAYER_DIRECTION_LEFT;
           dx -= 1;
+          remove_crystal();
 	      // play_dash_sound();
       } if (keys & J_RIGHT) {
           player_direction = PLAYER_DIRECTION_RIGHT;
           dx += 1;
+          add_crystal();
 	      // play_chainsaw_attack_sound();
       }
 
@@ -334,21 +344,42 @@ void read_input() {
 }
 
 
-void init_graphics() {
+
+// XXX: this should be moved elsewhere.
+
+#define WINDOW_TILEMAP_WIDTH 2
+#define WINDOW_TILEMAP_HEIGHT 18
+
+
+
+UINT8 WINDOW_TILEMAP[] = {
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
+};
+
+
+void init_sprites() {
     // Load sprites' tiles in video memory
     set_sprite_data(FIRST_PLAYER_SPRITE, PLAYER_SPRITES_TILE_COUNT, PLAYER_SPRITES);
     set_sprite_data(FIRST_CHAINSAW_LATERAL_SPRITE, CHAINSAW_LATERAL_SPRITES_TILE_COUNT, CHAINSAW_LATERAL_SPRITES);
-    set_sprite_data(FIRST_CHAINSAW_VERTICAL_SPRITE, CHAINSAW_VERTICAL_SPRITES_TILE_COUNT ,CHAINSAW_VERTICAL_SPRITES);
+    set_sprite_data(FIRST_CHAINSAW_VERTICAL_SPRITE, CHAINSAW_VERTICAL_SPRITES_TILE_COUNT, CHAINSAW_VERTICAL_SPRITES);
     set_sprite_data(FIRST_DUMMY_SPRITE, DUMMY_SPRITES_TILE_COUNT, DUMMY_SPRITES);
-
-    // Use 8x16 sprites
-    SPRITES_8x16;
-    // Makes sprites "layer" visible
-    SHOW_SPRITES;
-
-    set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
-    load_tilemap();
-    SHOW_BKG;
 
     // https://gbdev.gg8.se/wiki/articles/GBDK_set_sprite_prop
     set_sprite_prop(PLAYER_SPRITE_ID, 0x00U);
@@ -359,6 +390,121 @@ void init_graphics() {
     // We have to add an offset because of the way the gb handles sprites
     move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
 
+    // Use 8x16 sprites
+    SPRITES_8x16;
+    // Makes sprites "layer" visible
+    SHOW_SPRITES;
+}
+
+// 144 / 8 = 18 = max we can display given 8x8 tiles.
+#define MAX_HEARTS WINDOW_TILEMAP_HEIGHT
+#define MAX_CRYSTALS WINDOW_TILEMAP_HEIGHT
+
+static UINT8 heart_count = 0;
+static UINT8 crystal_count = 0;
+
+
+// XXX: hardcoded... should be relative.
+#define HEART_TILE 0x14
+#define CRYSTAL_TILE 0x15
+#define EMPTY_STAT_TILE 0x16
+
+void load_win_tilemap();
+
+
+
+void set_hearts(UINT8 x) {
+  heart_count = x;
+
+  int i = 0;
+
+  // Empty tiles.
+  while (i < (MAX_HEARTS - heart_count)) {
+    WINDOW_TILEMAP[(i << 1)] = EMPTY_STAT_TILE;
+    i++;
+  }
+
+
+  // Heart tiles.
+  while (i < MAX_HEARTS) {
+    WINDOW_TILEMAP[(i << 1)] = HEART_TILE;
+    i++;
+  }
+
+  load_win_tilemap();
+}
+
+void set_crystals(UINT8 x) {
+  crystal_count = x;
+
+  int i = 0;
+
+  // Empty tiles.
+  while (i < (MAX_HEARTS - crystal_count)) {
+    WINDOW_TILEMAP[(i << 1) + 1] = EMPTY_STAT_TILE;
+    i++;
+  }
+
+
+  // Heart tiles.
+  while (i < MAX_HEARTS) {
+    WINDOW_TILEMAP[(i << 1) + 1] = CRYSTAL_TILE;
+    i++;
+  }
+
+  load_win_tilemap();
+}
+
+
+
+
+
+void add_heart() {
+  if (heart_count < MAX_HEARTS) set_hearts(heart_count + 1);
+}
+
+
+// XXX: use this function for death?
+void remove_heart() {
+  if (heart_count > 0) set_hearts(heart_count - 1);
+}
+
+
+void add_crystal() {
+  if (crystal_count < MAX_CRYSTALS) set_crystals(crystal_count + 1);
+}
+
+
+void remove_crystal() {
+  if (crystal_count > 0) set_crystals(crystal_count - 1);
+}
+
+
+
+
+void load_win_tilemap() {
+  set_win_tiles(0, 0, WINDOW_TILEMAP_WIDTH, WINDOW_TILEMAP_HEIGHT, WINDOW_TILEMAP);
+}
+
+
+void init_background_and_window() {
+    // For the actual background
+    set_bkg_data(0, TILESET_TILE_COUNT, TILESET);
+    load_tilemap();
+    SHOW_BKG;
+
+
+    // For the window. Its tiles come immediately after the background tiles.
+    set_bkg_data(TILESET_TILE_COUNT, UI_TILESET_TILE_COUNT, UI_TILESET);
+    load_win_tilemap();
+
+    // Top-left corner is at (7, 0).
+    // The Game Boy screen is 160 pixels wide
+    // The UI bar is 16 px wide
+    // TODO: move this into #define.
+    move_win(7 + 160 - 16, 0);
+
+    SHOW_WIN;
 }
 
 
@@ -675,10 +821,13 @@ void handle_fall() {
 }
 
 void main(void) {
-
     borrow_oam_id();  // player
     borrow_oam_id();  // chainsaw1
     borrow_oam_id();  // chainsaw2
+    //
+    // XXX.
+    set_hearts(0);
+    set_crystals(0);
 
     gen_floor();
 
@@ -690,11 +839,9 @@ void main(void) {
     init_player_state();
     init_dash_state();
     init_chainsaw_state();
-    init_graphics();
-	
-    // Loading self-attacking enemy (two attacks/second)
-    //ENEMY basic;
-    //display_enemy(&basic, 72, 80);
+
+    init_sprites();
+    init_background_and_window();
 
     while (1) {
       // Wait for v-blank (screen refresh)

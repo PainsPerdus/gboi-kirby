@@ -57,6 +57,11 @@ assets:
 		--output-header-file=src/tileset.h \
 		--name TILESET \
 		./img/tileset.png
+	$(IMG2GB) tileset \
+		--output-c-file=src/ui_tileset.c \
+		--output-header-file=src/ui_tileset.h \
+		--name UI_TILESET \
+		./img/ui_tileset.png
 
 chunks: 
 	$(CHUNK_MAKER) ../ogmo/chunks/zero 0 ./src
