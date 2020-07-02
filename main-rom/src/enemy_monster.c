@@ -27,7 +27,8 @@ void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 a
 	unit->frames_until_next_attack = frames_between_attacks; // There is one full cycle before the enemy starts behaving normally. Might want to be able to configure that.
 	unit->frames_until_next_step = WALKING_FRAMES_BETWEEN_STEPS;
 	unit->walking_animation_state = 0;
-	unit->walking_direction = WALKING_DIRECTION_UP; // Might need removal
+	unit->walking_direction = WALKING_DIRECTION_UP;
+	unit->walking_direction_fallback = WALKING_DIRECTION_LEFT;
 	unit->dying_animation_state = 0; // Start off alive.
 	unit->enemy_rectangle.size.w = ENEMY_WIDTH;
 	unit->enemy_rectangle.size.h = ENEMY_HEIGHT;
@@ -177,77 +178,186 @@ void handle_enemy_walk(ENEMY* unit) {
 	// First step: calculate distance to player
 	calculate_diff_with_player(unit);
 	
-	// Initializing for potential future use
-	INT8 enemy_step_dx = 0;
-	INT8 enemy_step_dy = 0;
-	
 	if (!unit->frames_until_next_step) {
 		// This frame, the monster can move.
-		// First step: Decide in which direction! (#TODO: take into account the fact that distance is between top-left corners)
+		// First step: Decide in which direction to move.
 		if (unit->diff_with_player.dx < 0 && unit->diff_with_player.dy < 0) {
 			// Decide whether to move leftwards or upwards
-			if (unit->diff_with_player.dx > unit->diff_with_player.dy) // Move upwards
+			if (unit->diff_with_player.dx > unit->diff_with_player.dy) {
+				// Move upwards preferrably
 				unit->walking_direction = WALKING_DIRECTION_UP;
-			else
+				unit->walking_direction_fallback = WALKING_DIRECTION_LEFT;
+			} else {
 				unit->walking_direction = WALKING_DIRECTION_LEFT;
+				unit->walking_direction_fallback = WALKING_DIRECTION_UP;
+			}
 		} else if (unit->diff_with_player.dx > 0 && unit->diff_with_player.dy < 0) {
 			// Decide whether to move rightwards or upwards
-			if (unit->diff_with_player.dx < - unit->diff_with_player.dy) // Move upwards
+			if (unit->diff_with_player.dx < - unit->diff_with_player.dy) {
+				// Move upwards preferrably
 				unit->walking_direction = WALKING_DIRECTION_UP;
-			else
+				unit->walking_direction_fallback = WALKING_DIRECTION_RIGHT;
+			} else {
 				unit->walking_direction = WALKING_DIRECTION_RIGHT;
+				unit->walking_direction_fallback = WALKING_DIRECTION_UP;
+			}
 		} else if (unit->diff_with_player.dx > 0 && unit->diff_with_player.dy > 0) {
 			// Decide whether to move rightwards or downwards
-			if (unit->diff_with_player.dx < unit->diff_with_player.dy) // Move downwards
+			if (unit->diff_with_player.dx < unit->diff_with_player.dy) {
+				// Move downwards preferrably
 				unit->walking_direction = WALKING_DIRECTION_DOWN;
-			else
+				unit->walking_direction_fallback = WALKING_DIRECTION_RIGHT;
+			} else {
 				unit->walking_direction = WALKING_DIRECTION_RIGHT;
+				unit->walking_direction_fallback = WALKING_DIRECTION_DOWN;
+			}
 		} else if (unit->diff_with_player.dx < 0 && unit->diff_with_player.dy > 0) {
 			// Decide whether to move leftwards or downwards
-			if (- unit->diff_with_player.dx < unit->diff_with_player.dy) // Move downwards
+			if (- unit->diff_with_player.dx < unit->diff_with_player.dy) {
+				// Move downwards preferrably
 				unit->walking_direction = WALKING_DIRECTION_DOWN;
-			else
+				unit->walking_direction_fallback = WALKING_DIRECTION_LEFT;
+			} else {
 				unit->walking_direction = WALKING_DIRECTION_LEFT;
+				unit->walking_direction_fallback = WALKING_DIRECTION_DOWN;
+			}
 		} else {
+			// Stand still
 			unit->walking_direction = WALKING_DIRECTION_IMMOBILE;
+			unit->walking_direction_fallback = WALKING_DIRECTION_IMMOBILE;
 		}
 		
-		// Second step: enact movement, if you're not colliding!
-		switch (unit->walking_direction) {
-			case WALKING_DIRECTION_DOWN:
-				if (unit->enemy_rectangle.pos.y < 200)
-					enemy_step_dy = 1;
-				break;
+		// Second step: attempt enacting movement
+		// The following variables need to be initialized
+		INT8 enemy_step_dx = 0;
+		INT8 enemy_step_dy = 0;
+		BOOLEAN has_moved = 0;
+		UINT8 future_tile_x;
+		UINT8 future_tile_y;
+		UINT8 future_tile_offset;
+		INT16 k;
+	
+		// Fallback system: preferred direction > fallback direction > no movement.
+		while (!has_moved && unit->walking_direction != WALKING_DIRECTION_IMMOBILE) {
+			switch (unit->walking_direction) {
+				case WALKING_DIRECTION_DOWN:
+					if (unit->enemy_rectangle.pos.y < Y_OFFSCREEN) {
+						enemy_step_dy = 1;
+					} else {
+						unit->walking_direction = unit->walking_direction_fallback;
+						unit->walking_direction_fallback = WALKING_DIRECTION_IMMOBILE;
+						continue;
+					}
+					break;
 			
-			case WALKING_DIRECTION_UP:
-				if (unit->enemy_rectangle.pos.y > 0)
-					enemy_step_dy = -1;
-				break;
+				case WALKING_DIRECTION_UP:
+					if (unit->enemy_rectangle.pos.y > 0) {
+						enemy_step_dy = -1;
+					} else {
+						unit->walking_direction = unit->walking_direction_fallback;
+						unit->walking_direction_fallback = WALKING_DIRECTION_IMMOBILE;
+						continue;
+					}
+					break;
 			
-			case WALKING_DIRECTION_RIGHT:
-				if (unit->enemy_rectangle.pos.x < 200)
-					enemy_step_dx = 1;
-				break;
+				case WALKING_DIRECTION_RIGHT:
+					if (unit->enemy_rectangle.pos.x < X_OFFSCREEN) {
+						enemy_step_dx = 1;
+					} else {
+						unit->walking_direction = unit->walking_direction_fallback;
+						unit->walking_direction_fallback = WALKING_DIRECTION_IMMOBILE;
+						continue;
+					}
+					break;
 				
-			case WALKING_DIRECTION_LEFT:
-				if (unit->enemy_rectangle.pos.x > 0)
-					enemy_step_dx = -1;
-				break;
+				case WALKING_DIRECTION_LEFT:
+					if (unit->enemy_rectangle.pos.x > 0) {
+						enemy_step_dx = -1;
+					} else {
+						unit->walking_direction = unit->walking_direction_fallback;
+						unit->walking_direction_fallback = WALKING_DIRECTION_IMMOBILE;
+						continue;
+					}
+					break;
 			
-			default:
-				break;
-		}
+				default:
+					break;
+			}
 		
-		// Compute future pos
-		unit->enemy_next_rectangle = unit->enemy_rectangle;
-		unit->enemy_next_rectangle.pos.y += enemy_step_dx;
-		unit->enemy_next_rectangle.pos.y += enemy_step_dy;
+			// Compute future pos
+			unit->enemy_next_rectangle = unit->enemy_rectangle;
+			unit->enemy_next_rectangle.pos.y += enemy_step_dx;
+			unit->enemy_next_rectangle.pos.y += enemy_step_dy;
 					
-		// Detect collision with player before scrolling
-		if (!rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
-			scroll_enemy(unit, enemy_step_dx, enemy_step_dy);
+			// Detect collision with player before scrolling
+			if (rect_rect_collision(&unit->enemy_next_rectangle, &player)) {
+				unit->walking_direction = unit->walking_direction_fallback;
+				unit->walking_direction_fallback = WALKING_DIRECTION_IMMOBILE;
+			} else {
+				// Attempt detecting collisions with objects before proceeding
+				// Switch to tilemap coordinates
+				future_tile_x = (unit->enemy_next_rectangle.pos.x >> 3);
+				future_tile_y = (unit->enemy_next_rectangle.pos.y >> 3);
+				
+				k = future_tile_y * (ROOM_WIDTH + 2) + future_tile_x;
+				
+				// Check neighboring tiles depending on the direction we're moving towards
+				switch (unit->walking_direction) {
+					case WALKING_DIRECTION_UP:
+						// Intervenes in determining neighboring tiles
+						future_tile_offset = unit->enemy_next_rectangle.pos.x & 7;
+						
+						// Check neighboring tiles upwards
+						if (!TILEMAP[k] && !TILEMAP[k+1] && (!future_tile_offset || !TILEMAP[k+2])) {
+							scroll_enemy(unit, enemy_step_dx, enemy_step_dy);
+							has_moved = 1;
+						}
+						break;
+						
+					case WALKING_DIRECTION_DOWN:
+						// Intervenes in determining neighboring tiles
+						future_tile_offset = unit->enemy_next_rectangle.pos.x & 7;
+						
+						// Check neighboring tiles downwards
+						if (!TILEMAP[k+36] && !TILEMAP[k+37] && (!future_tile_offset || !TILEMAP[k+38])) {
+							scroll_enemy(unit, enemy_step_dx, enemy_step_dy);
+							has_moved = 1;
+						}
+						break;
+						
+					case WALKING_DIRECTION_LEFT:
+						// Intervenes in determining neighboring tiles
+						future_tile_offset = unit->enemy_next_rectangle.pos.y & 7;
+						
+						// Check neighboring tiles leftwards
+						if (!TILEMAP[k] && !TILEMAP[k+18] && (!future_tile_offset || !TILEMAP[k+36])) {
+							scroll_enemy(unit, enemy_step_dx, enemy_step_dy);
+							has_moved = 1;
+						}
+						break;
+					
+					case WALKING_DIRECTION_RIGHT:
+						// Intervenes in determining neighboring tiles
+						future_tile_offset = unit->enemy_next_rectangle.pos.y & 7;
+						
+						// Check neighboring tiles rightwards
+						if (!TILEMAP[k+2] && !TILEMAP[k+20] && (!future_tile_offset || !TILEMAP[k+38])) {
+							scroll_enemy(unit, enemy_step_dx, enemy_step_dy);
+							has_moved = 1;
+						}
+						break;
+						
+					default:
+						break;
+				}
+				
+				if (!has_moved) {
+					unit->walking_direction = unit->walking_direction_fallback;
+					unit->walking_direction_fallback = WALKING_DIRECTION_IMMOBILE;
+				}
+			}
 		}
-		
+
 		// Reset waiting sequence
 		unit->frames_until_next_step = WALKING_FRAMES_BETWEEN_STEPS;
 	}
