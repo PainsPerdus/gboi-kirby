@@ -679,8 +679,17 @@ void main(void) {
       // Some saw assets are 16x16 and therefore require two side-by-side 8x16 sprites.
       move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);
       move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x + 8, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 chainsaw animation
-
       move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+2,offset_chainsaw + player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x,16+ player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 sainwhaw animation
+      
+      BOOLEAN all_dead = TRUE;
+      for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
+        if (enemy_stack[i].health > 0) {
+          handle_enemy_attack(&enemy_stack[i]);
+          all_dead = FALSE;
+        } else 
+          enemy_death(&enemy_stack[i]);
+      }
+
 
       // We do not update the animation on each frame: the animation
       // will be too quick. So we skip frames
@@ -703,15 +712,6 @@ void main(void) {
               PLAYER_SPRITE_ANIM,
               player_direction,
               player_animation_frame);
-
-      BOOLEAN all_dead = TRUE;
-      for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
-        if (enemy_stack[i].health > 0) {
-          handle_enemy_attack(&enemy_stack[i]);
-          all_dead = FALSE;
-        } else 
-          enemy_death(&enemy_stack[i]);
-      }
 
       if (all_dead) {
         open_doors();
