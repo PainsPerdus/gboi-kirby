@@ -881,7 +881,7 @@ void main(void) {
       move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);
       move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x + 8, player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 chainsaw animation
       move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+2,offset_chainsaw + player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x,16+ player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 sainwhaw animation
-      
+ 
       BOOLEAN all_dead = TRUE;
       for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
         if (enemy_stack[i].health > 0) {
@@ -905,7 +905,6 @@ void main(void) {
         invincibility_time --;
       }
 
-
       // We do not update the animation on each frame: the animation
       // will be too quick. So we skip frames
       frame_skip -= 1;
@@ -919,6 +918,7 @@ void main(void) {
       if (dx == 0 && dy == 0){
           player_animation_frame = 0;
       }
+
 
 
       // Update sprites' tiles
