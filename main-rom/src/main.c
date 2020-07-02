@@ -32,7 +32,7 @@ static UINT8 cooldown_dash = 200  ;          //cooldown of the dash (in number o
 const UINT8 ROOM_WIDTH = 16;  // note: should fetch that from the room's data
 const UINT8 ROOM_HEIGHT = 16;
 
-INT8 scroll_x = 16;  // initial offset because of the UI
+INT8 scroll_x = 0;  // initial offset because of the UI
 INT8 scroll_y = 0;
 
 // Flip the given sprite on X axis.
@@ -202,6 +202,7 @@ static void open_doors() {
     }
   }
 }
+
 
 /**
  * @brief Replace the currently loaded room in TILEMAP with base_floor.rooms[room_number]
