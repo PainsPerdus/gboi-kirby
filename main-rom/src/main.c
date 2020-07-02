@@ -333,6 +333,8 @@ void read_input() {
 
           dx = dx + dx;
           dy = dy + dy;
+
+          play_dash_sound();
         }
       }
 
