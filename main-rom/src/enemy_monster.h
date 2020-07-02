@@ -56,12 +56,9 @@ typedef struct enemy {
 	// - projectile speed (if we decide that it depends on the monster rather than, for example, on how far the player got in the game)
 } ENEMY;
 
-
 #define MAX_ENEMY_NB 10
 extern ENEMY enemy_stack[MAX_ENEMY_NB];
 extern UINT8 enemy_stack_ptr;
-
-
 
 /**
  * @brief Initializes an enemy unit
