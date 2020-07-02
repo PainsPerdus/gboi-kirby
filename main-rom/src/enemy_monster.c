@@ -37,7 +37,7 @@ void init_enemy(ENEMY* unit, UINT8 enemy_sprite_l, UINT8 enemy_sprite_r, UINT8 a
 }
 
 inline void init_melee(ENEMY* unit) {
-    init_enemy(unit, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, ENEMY_ATTACK_NONE, 2, 2, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
+    init_enemy(unit, DUMMY_SPRITE_ID, DUMMY_SPRITE_ID + 2, ENEMY_ATTACK_NONE, 1, 2, 30); // The fourth parameter is stopgap! Might want #define or sprite id pool
 }
 
 // Display enemy unit on-screen at specified x and y coordinates
@@ -78,7 +78,7 @@ void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos) {
 
 // Handles all steps of the enemy death sequence
 void handle_enemy_death(ENEMY* unit) {
-	if (unit->dying_animation_state == 50)
+	if (unit->dying_animation_state == 52)
 		return;
 
 	switch(unit->dying_animation_state) {
@@ -111,6 +111,7 @@ void enemy_release(ENEMY* unit) {
 	move_enemy(unit, X_OFFSCREEN, Y_OFFSCREEN);
 	free_oam_id(unit->sprite_id1);
 	free_oam_id(unit->sprite_id2);
+	__asm__("ld b,b");
 }
 
 // Enemy unit loses specified amount of HP

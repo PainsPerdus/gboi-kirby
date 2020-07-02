@@ -152,12 +152,23 @@ FLOOR base_floor;
 
 
 static UINT8 invincibility_time = 0;
+static UINT8 life = 18;
+
+
+
+
+void add_heart();
+void remove_heart();
+void set_crystals(UINT8);
 
 
 void player_hit() {
   if (invincibility_time > 0)
     return;
   invincibility_time = 60;
+  life --;
+  remove_heart();
+  play_hit_sound();
 }
 
 
@@ -286,11 +297,6 @@ void check_doors() {
   }
 }
 
-
-void add_heart();
-void remove_heart();
-
-
 void read_input() {
     // Read joypad keys to know if the player is walking
     // and in which direction
@@ -329,6 +335,7 @@ void read_input() {
           player_direction += 36;             //dash tiles = direction tile + 36
           is_dashing = 1;
           compteur_dash = 0;
+          set_crystals(0);
 
 
           dx = dx + dx;
@@ -871,8 +878,10 @@ void handle_chainsaw_attack() {
     }
 
     for (UINT8 i = 0; i < enemy_stack_ptr; i++) { 
-      if (rect_rect_collision(&chainsaw_hitbox, &enemy_stack[i].enemy_rectangle)) {
-        enemy_hp_loss(&enemy_stack[i], 1);
+      if (&enemy_stack[i].health > 0) {
+        if (rect_rect_collision(&chainsaw_hitbox, &enemy_stack[i].enemy_rectangle)) {
+          enemy_hp_loss(&enemy_stack[i], 1);
+        }
       }
     }
   }
@@ -886,8 +895,8 @@ void main(void) {
     borrow_oam_id();  // chainsaw2
     //
     // XXX.
-    set_hearts(0);
-    set_crystals(0);
+    set_hearts(life);
+    set_crystals(18);
 
     gen_floor();
 
@@ -917,6 +926,18 @@ void main(void) {
       handle_fall();
       handle_chainsaw_attack();
 
+      if (dash_frame_counter % 4 == 0)
+        add_crystal();
+
+
+      for (UINT8 i = 0; i < enemy_stack_ptr; i++) { 
+        if (enemy_stack[i].health == 0)
+          continue;
+        if (rect_rect_collision(&player, &enemy_stack[i].enemy_rectangle)) {
+          player_hit();
+        }
+      }
+
       // Do NOT move this near update_sprite_animation...
       move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
 
@@ -926,12 +947,12 @@ void main(void) {
       move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+2,offset_chainsaw + player.pos.x + SPRITE_OFFSET_X + scroll_x + chainsaw_relativ_x,16+ player.pos.y + SPRITE_OFFSET_Y + scroll_y + chainsaw_relativ_y);      //for the 16*16 sainwhaw animation
  
       BOOLEAN all_dead = TRUE;
-      for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
-        if (enemy_stack[i].health > 0) {
+      for (UINT8 k = 0; k < enemy_stack_ptr; k++) {
+        if (enemy_stack[k].health > 0) {
           all_dead = FALSE;
         }
 		
-        handle_enemy(&enemy_stack[i]);
+        handle_enemy(&enemy_stack[k]);
       }
 
       // player invincibility graphics
