@@ -77,9 +77,10 @@ void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos) {
 }
 
 // Handles all steps of the enemy death sequence
-void enemy_death(ENEMY* unit) {
+void handle_enemy_death(ENEMY* unit) {
 	if (unit->dying_animation_state == 50)
 		return;
+
 	switch(unit->dying_animation_state) {
 		case 1: // Make the enemy disappear temporarily
 		case 13:
@@ -117,9 +118,9 @@ void enemy_hp_loss(ENEMY* unit, UINT8 amount) {
 	if (amount < unit->health) { // The unit survives, so it just loses the specified amount of HP
 		unit->health -= amount;
 		// Optional: might want a sound here
-	} else { // The unit dies: bring its HP to 0 and then call enemy_death
+	} else { // The unit dies: bring its HP to 0 and then prepare dying animation
 		unit->health = 0;
-		// Make the death animation triggerable in the main program
+		// Make the death animation triggerable
 		unit->dying_animation_state = 1;
 	}
 	
@@ -299,6 +300,7 @@ void handle_enemy_walk(ENEMY* unit) {
 				future_tile_x = (unit->enemy_next_rectangle.pos.x >> 3);
 				future_tile_y = (unit->enemy_next_rectangle.pos.y >> 3);
 				
+				// Might be a little off...
 				k = future_tile_y * (ROOM_WIDTH + 2) + future_tile_x;
 				
 				// Check neighboring tiles depending on the direction we're moving towards
@@ -377,4 +379,15 @@ ENEMY* get_available_enemy() {
 void calculate_diff_with_player(ENEMY* unit) {
 	unit->diff_with_player.dx = player.pos.x - unit->enemy_rectangle.pos.x;
 	unit->diff_with_player.dy = player.pos.y - unit->enemy_rectangle.pos.y;
+}
+
+// Handle all enemy actions
+void handle_enemy(ENEMY* unit) {
+	if (!unit->dying_animation_state) { // Enemy is alive: handle its walk and its attack
+        handle_enemy_attack(unit);
+		handle_enemy_walk(unit);
+    } else {
+        // Enemy about to die: play death animation.
+        handle_enemy_death(unit);
+    }
 }

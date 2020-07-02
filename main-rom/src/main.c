@@ -885,10 +885,10 @@ void main(void) {
       BOOLEAN all_dead = TRUE;
       for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
         if (enemy_stack[i].health > 0) {
-          handle_enemy_attack(&enemy_stack[i]);
           all_dead = FALSE;
-        } else 
-          enemy_death(&enemy_stack[i]);
+        }
+		
+        handle_enemy(&enemy_stack[i]);
       }
 
       // player invincibility graphics
@@ -932,17 +932,5 @@ void main(void) {
         open_doors();
         reset_doors();
       }
-
-
-          
-      // SECTION HANDLING ENEMIES
-      // If there are several enemies, the following is to be done with EACH enemy that is alive.
-      /*if (basic.health > 0) { // Enemy is alive: handle its walk and its attack
-        handle_enemy_walk(&basic);
-        handle_enemy_attack(&basic);
-      } else {
-        // Enemy about to die: play death animation.
-        enemy_death(&basic);
-      }*/
     }
 }

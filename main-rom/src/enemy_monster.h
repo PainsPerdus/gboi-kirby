@@ -115,7 +115,7 @@ void scroll_enemy(ENEMY* unit, INT8 dxpos, INT8 dypos);
  *
  * @param unit
  */
-void enemy_death(ENEMY* unit);
+void handle_enemy_death(ENEMY* unit);
 
 /**
  * @brief Remove an enemy from the game.
@@ -168,4 +168,11 @@ ENEMY* get_available_enemy();
  * @param unit
  */
 void calculate_diff_with_player(ENEMY* unit);
+
+/**
+ * @brief Handles all enemy actions
+ *
+ * @param unit
+ */
+void handle_enemy(ENEMY* unit);
 #endif
