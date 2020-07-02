@@ -274,7 +274,6 @@ void check_doors() {
   }
 }
 
-
 void read_input() {
     // Read joypad keys to know if the player is walking
     // and in which direction
