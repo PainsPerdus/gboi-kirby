@@ -865,13 +865,8 @@ void handle_chainsaw_attack() {
         break;
     }
 
-    for (UINT8 i = 0; i < enemy_stack_ptr; i++) {
-      enemy_hitbox.pos.x = enemy_stack[i].xpos;
-      enemy_hitbox.pos.y = enemy_stack[i].ypos;
-      enemy_hitbox.size.w = 16;
-      enemy_hitbox.size.h = 8;
-      
-      if (rect_rect_collision(&chainsaw_hitbox, &enemy_hitbox)) {
+    for (UINT8 i = 0; i < enemy_stack_ptr; i++) { 
+      if (rect_rect_collision(&chainsaw_hitbox, &enemy_stack[i].enemy_rectangle)) {
         enemy_hp_loss(&enemy_stack[i], 1);
       }
     }
@@ -879,7 +874,7 @@ void handle_chainsaw_attack() {
 }
 
 void main(void) {
-    start_screen();
+    //start_screen();
 
     borrow_oam_id();  // player
     borrow_oam_id();  // chainsaw1
