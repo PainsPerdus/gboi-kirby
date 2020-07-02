@@ -9,7 +9,7 @@
 #define ENEMY_ATTACK_SELF 2 // used for testing purposes
 #define ENEMY_ATTACK_NONE 3 // innocent monster
 
-#define WALKING_FRAMES_BETWEEN_STEPS 1
+#define WALKING_FRAMES_BETWEEN_STEPS 2
 
 #define WALKING_DIRECTION_LEFT 0
 #define WALKING_DIRECTION_RIGHT 1
