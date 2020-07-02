@@ -15,8 +15,9 @@ ones ;] ) for a little demo in front of other people. We can definitely be proud
 of our playable game (albeit somewhat buggy, but pssh...), which came to life in
 less than two weeks!
 
-You can [try it out](https://github.com/PainsPerdus/gboi-kirby/releases/tag/1.0)
-by downloading our ROM and running it under a Game Boy emulator (we use
+We made a (final? time will tell...) release, so you can [try it
+out](https://github.com/PainsPerdus/gboi-kirby/releases/tag/1.0) by downloading
+our ROM and running it under a Game Boy emulator (we use
 [SameBoy](https://sameboy.github.io/), but here's a little demo (with sound!):
 
 <video controls height="400" >
@@ -66,9 +67,7 @@ but we could not implement projectiles in time to make use of it :'(
 
 
 
-## Last words from our team
-
-### On sound design
+## On sound design
 
 >  Thank to the sound features of the Gameboy, every sound is implemented as a single
 C function. These functions contain inline ASM, assembled and inserted as-is in
@@ -82,7 +81,7 @@ still in the code ;P
 
 - [@RoussyE][3]
 
-### On AI
+## On AI
 
 > The last few hours since my last post were rich in features for _Pear
 Jaw_ (or _Jaw Pear_, I'm feeling tolerant today)! This little thing can now
@@ -101,9 +100,19 @@ fruit of destruction can learn about close combat with some practice!
 - [@AdameBf][6]
 
 
+## Last words... till we meet again!
 
-
-
+This project was not easy. We all had to sacrifice something to make it word, be
+it committment to good coding practices, sleep, sanity, or any of the many other
+things we lost along the way; but we also *gained* a great deal, and I'm not
+only talking about our freshly-minted knowledge of the Game Boy hardware
+architecture. I think I speak for the entire Team Kirby when I say that this project
+was exhilarating; it pushed us to our limits, and showed us just how much we
+could achieve, together, with focus and dedication. So to all members of Team
+Kirby, of Team Rocket (our friends and competitors - check our [their
+game][7] if you like low-level stuff, it should satisfy anyone's craving for
+GBZ80 ASM *and* clever hacks), and to our supervising teacher
+[@Aunsiels][8]... so long, and thank you for all the ~~fish~~ glitches :)
 
 [1]: https://github.com/PaulVez
 [2]: https://github.com/ChatPion
@@ -111,3 +120,5 @@ fruit of destruction can learn about close combat with some practice!
 [4]: https://github.com/Ametheek
 [5]: https://github.com/yberreby
 [6]: https://github.com/AdameBf
+[7]: https://github.com/PainsPerdus/gboi-rocket
+[8]: https://github.com/Aunsiels
