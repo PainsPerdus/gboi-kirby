@@ -22,7 +22,7 @@ compact as possible_, alignment be damned. That format would coexist with two
 others: an unpacked runtime representation, that takes up more space but is
 easier to use from our C code, and a high-level, JSON-based,
 Ogmo-Editor-3-compatible representation to let our map designers work
-comfortably instead of having to flip bit 7 of the 33th byte of a chunk by hand
+comfortably instead of having to flip bit 7 of the 33rd byte of a chunk by hand
 to indicate that there's a top door. *Or was it bit 6?...* You see the issue.
 
 To carry out this plan, we needed a reliable tool to perform the
