@@ -17,12 +17,12 @@ managed to do it, here it is in action:
 
 ## The linker did not like me
 
-I was stuck three long hours because of a tiny error that
+I was stuck for three long hours because of a tiny error that
 [@yberreby](https://github.com/yberreby) fixed in five minutes. 
 
 Basically, I declared a global variable in `global.h` with `FLOOR base_floor;`,
 and called it from two separate .c files. However, the linker was not
-cooperative and attached gave them two different memory locations, one being
+cooperative and assigned them to two different memory locations, one being
 right in the middle of another variable! How do you solve this problem? By
 adding the keywork `extern` in the declaration in `global.h`: `extern FLOOR
 base_floor`. That's it!
