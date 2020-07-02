@@ -18,14 +18,15 @@
 #define WALKING_DIRECTION_IMMOBILE 4
 
 // enemy sprite placement offset
-#define X_ENEMY_SPRITE_OFFSET 8
-#define Y_ENEMY_SPRITE_OFFSET 16
+#define ENEMY_SPRITE_OFFSET_X 8
+#define ENEMY_SPRITE_OFFSET_Y 16
 
 #define X_OFFSCREEN 240
 #define Y_OFFSCREEN 240
 
-#define ENEMY_HEIGHT 16
+#define ENEMY_HEIGHT 8 // perspective effect
 #define ENEMY_WIDTH 16
+#define ENEMY_PERSPECTIVE_OFFSET_Y 8
 
 extern RECTANGLE player;
 extern const UINT8 ROOM_WIDTH;
