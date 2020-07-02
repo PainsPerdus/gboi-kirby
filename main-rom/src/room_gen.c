@@ -37,6 +37,10 @@ static UINT8 clutter_budget = 0;
 
 static UINT8 current_room_ptr;
 
+/**
+ * @brief Used to stock all the spawners from one chunk
+ * 
+ */
 static ENEMY_SPAWNER spawner_buffer[MAX_ENEMY_NB];
 static UINT8 spawner_buffer_ptr = 0;
 
@@ -285,6 +289,13 @@ static void get_bottom_left_chunk(BOOLEAN bottom_door, BOOLEAN left_door, CHUNK 
     apply_transformation(ROT_LEFT_MATRIX, tempo, output);
 }
 
+/**
+ * @brief Save the currently processed chunk in the room
+ * 
+ * @param chunk 
+ * @param room 
+ * @param offset 
+ */
 static void write_chunk_to_small_room(CHUNK chunk, ROOM* room, UBYTE offset) {
     TILE* writer = room->small_tiles + offset;
     TILE* reader = chunk;
@@ -296,6 +307,12 @@ static void write_chunk_to_small_room(CHUNK chunk, ROOM* room, UBYTE offset) {
     }
 }
 
+/**
+ * @brief Save all the spawner found in the currently processed chunk
+ * 
+ * @param x_offset final x offset of the chunk
+ * @param y_offset final y pffset of the chunk
+ */
 static void flush_spawn_buffer(UINT8 x_offset, UINT8 y_offset) {
     UINT8 x;
     UINT8 y;
