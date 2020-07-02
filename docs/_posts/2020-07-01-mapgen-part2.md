@@ -39,7 +39,7 @@ number of LOC by a crazy amount: from 18k LOC to a mere 1.5k LOC!
 
 For example, by changing this: 
 
-```C
+```c
 int main(void) {
     ROOM room = {
         .doors = {
@@ -58,7 +58,7 @@ int main(void) {
 
 to this:
 
-```C
+```c
 ROOM room = {
     .doors = {
         {0, {0, 0, 0}},
