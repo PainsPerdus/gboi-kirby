@@ -148,6 +148,15 @@ static UINT8 room_number = 0;
 FLOOR base_floor;
 
 
+static UINT8 invincibility_time = 0;
+
+
+void player_hit() {
+  if (invincibility_time > 0)
+    return;
+  invincibility_time = 60;
+}
+
 
 /**
  * @brief Replace the background layer with TILEMAP
@@ -567,7 +576,8 @@ void collision_check(BOOLEAN x_move) {
 
         INT16 k = block_y * (ROOM_WIDTH + 2) + block_x;
 
-        if (TILEMAP[k] != 0) {
+        // check collision if tile is not empty or tile is a hole but Pinney isn't invincible and dashing
+        if (TILEMAP[k] != 0 && !((is_dashing && invincibility_time == 0) && TILEMAP[k] == 3)) {
           block.pos.x = block_x << 3;
           block.pos.y = block_y << 3;
 
@@ -581,7 +591,13 @@ void collision_check(BOOLEAN x_move) {
               new_player.pos.y += diff.dy;
               total_diff.dy = 0;
             }
+
+            // spikes
+            if (TILEMAP[k] == 2) {
+              player_hit();
+            }
           }
+
         }
       }
     }
@@ -633,10 +649,29 @@ void init_dash_state() {
 }
 
 void init_chainsaw_state() {
-
     is_dashing = 0;
     compteur_dash = 0;
+}
 
+UINT8 last_safe_x;
+UINT8 last_safe_y;
+
+// won't work with big rooms
+void handle_fall() {
+  UINT8 x = (player.pos.x + 4) >> 3;
+  UINT8 y = (player.pos.y + 4) >> 3;
+
+  if (TILEMAP[y * (SMALL_ROOM_SIDE + 2) + x] == 3) {
+    if (!is_dashing) {
+      player_hit();
+      player.pos.x = last_safe_x << 3;
+      player.pos.y = last_safe_y << 3;
+      play_falling_sound();
+    }
+  } else {
+    last_safe_x = x;
+    last_safe_y = y;
+  }
 }
 
 void main(void) {
@@ -672,6 +707,7 @@ void main(void) {
       handle_chainsaw();
 
       handle_collisions();
+      handle_fall();
 
       // Do NOT move this near update_sprite_animation...
       move_sprite(PLAYER_SPRITE_ID, player.pos.x + SPRITE_OFFSET_X + scroll_x, player.pos.y + SPRITE_OFFSET_Y + scroll_y);
@@ -688,6 +724,20 @@ void main(void) {
           all_dead = FALSE;
         } else 
           enemy_death(&enemy_stack[i]);
+      }
+
+      // player invincibility graphics
+      if (invincibility_time > 0) {
+        if ((50 < invincibility_time && invincibility_time <= 60) || (30 < invincibility_time && invincibility_time <= 40) || (10 < invincibility_time && invincibility_time <= 20)) {
+          move_sprite(PLAYER_SPRITE_ID, X_OFFSCREEN, Y_OFFSCREEN);
+          move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID, X_OFFSCREEN, Y_OFFSCREEN);
+          move_sprite(CHAINSAW_TOP_LATERAL_SPRITE_ID+1, X_OFFSCREEN, Y_OFFSCREEN);      //for the 16*16 chainsaw animation
+        }
+        if (invincibility_time == 60) {
+          wait_vbl_done();
+          wait_vbl_done();
+        }
+        invincibility_time --;
       }
 
 
