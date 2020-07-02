@@ -293,7 +293,25 @@ void gen_floor() {
                 base_floor.rooms[i].doors[j].is_open = FALSE;
             }
         }
-        gen_room(&base_floor.rooms[i], i);
+
+        if (i > 0)
+            gen_room(&base_floor.rooms[i], i);
+        else {
+            // first room is empty
+            if (base_floor.rooms[i].is_small) {
+                for (UINT16 k = 0; k < SMALL_ROOM_SIDE * SMALL_ROOM_SIDE; k++) {
+                    base_floor.rooms[i].small_tiles[k] = 0;
+                }   
+            } else {
+                for (UINT16 k = 0; k < BIG_ROOM_SIDE * BIG_ROOM_SIDE; k++) {
+                    base_floor.rooms[i].big_tiles[k] = 0;
+                }
+            }
+            
+        }
+
+            
+            
     }
 
 }
