@@ -554,8 +554,41 @@ void reset_chainsaw(){
 }
 
 
-void handle_collisions() {
+void collision_check(BOOLEAN x_move) {
   VEC_DIFF diff = {0, 0};
+
+  for (UINT8 i = 0; i < 3; i++) {
+      for (UINT8 j = 0; j < 3; j++) {
+        INT8 block_x = (effective_x + i - 1);
+        INT8 block_y = (effective_y + j - 1);
+
+        if (block_x < 0 || block_x >= (INT8) ROOM_WIDTH + 2 || block_y < 0 || block_y >= (INT8) ROOM_HEIGHT + 2)  // out of bounds
+          continue;
+
+        INT16 k = block_y * (ROOM_WIDTH + 2) + block_x;
+
+        if (TILEMAP[k] != 0) {
+          block.pos.x = block_x << 3;
+          block.pos.y = block_y << 3;
+
+          if (rect_rect_collision(&new_player, &block)) {
+            rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
+            
+            if (x_move){
+            new_player.pos.x += diff.dx;
+            total_diff.dx = 0;
+            } else {
+              new_player.pos.y += diff.dy;
+              total_diff.dy = 0;
+            }
+          }
+        }
+      }
+    }
+}
+
+
+void handle_collisions() {
 
   total_diff.dx = dx;
   total_diff.dy = dy;
@@ -575,28 +608,7 @@ void handle_collisions() {
     effective_x = (new_player.pos.x >> 3);
     effective_y = (player.pos.y >> 3);
 
-    for (UINT8 i = 0; i < 3; i++) {
-      for (UINT8 j = 0; j < 3; j++) {
-        INT8 block_x = (effective_x + i - 1);
-        INT8 block_y = (effective_y + j - 1);
-
-        if (block_x < 0 || block_x >= (INT8) ROOM_WIDTH + 2 || block_y < 0 || block_y >= (INT8) ROOM_HEIGHT + 2)  // out of bounds
-          continue;
-
-        INT16 k = block_y * (ROOM_WIDTH + 2) + block_x;
-
-        if (TILEMAP[k] != 0) {
-          block.pos.x = block_x << 3;
-          block.pos.y = block_y << 3;
-
-          if (rect_rect_collision(&new_player, &block)) {
-            rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
-            new_player.pos.x += diff.dx;
-            total_diff.dx = 0;
-          }
-        }
-      }
-    }
+    collision_check(TRUE);
 
     current_diff.dy = ABS_CLAMP(total_diff.dy, MAX_MOVE_Y);
     total_diff.dy -= current_diff.dy;
@@ -605,31 +617,7 @@ void handle_collisions() {
     effective_x = (new_player.pos.x >> 3);
     effective_y = (new_player.pos.y >> 3);
 
-    for (UINT8 i = 0; i < 3; i++) {
-      for (UINT8 j = 0; j < 3; j++) {
-        INT8 block_x = (effective_x + i - 1);
-        INT8 block_y = (effective_y + j - 1);
-
-        if (block_x < 0 || block_x >= (INT8) ROOM_WIDTH + 2 || block_y < 0 || block_y >= (INT8) ROOM_HEIGHT + 2)  // out of bounds
-          continue;
-
-        INT16 k = block_y * (ROOM_WIDTH + 2) + block_x;
-
-        if (TILEMAP[k] != 0) {
-          block.pos.x = block_x << 3;
-          block.pos.y = block_y << 3;
-
-          if (rect_rect_collision(&new_player, &block)) {
-            // This will not play immediately, but keep running against a wall
-            // under Sameboy and your ears will explode. Trust me.
-            //play_hit_sound();
-            rect_rect_penetration(&(player.pos), &(new_player.pos), &(player.size), &block, &diff);
-            new_player.pos.y += diff.dy;
-            total_diff.dy = 0;
-          }
-        }
-      }
-    }
+    collision_check(FALSE);
 
     player.pos.x = new_player.pos.x;
     player.pos.y = new_player.pos.y;
