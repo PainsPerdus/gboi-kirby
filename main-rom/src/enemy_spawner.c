@@ -27,7 +27,7 @@ void spawn_enemies(UINT8 room_ptr) {
         ENEMY* enemy = get_available_enemy();
         
         init_melee(enemy);
-        enemy->xpos = (((UINT8) (spawner->pos % 16)) << 3) + 8;
-        enemy->ypos = (((UINT8) (spawner->pos >> 4)) << 3) + 8;
+        enemy->enemy_rectangle.pos.x = (((UINT8) (spawner->pos % 16)) << 3) + 8;
+        enemy->enemy_rectangle.pos.y = (((UINT8) (spawner->pos >> 4)) << 3) + 8;
     }
 }

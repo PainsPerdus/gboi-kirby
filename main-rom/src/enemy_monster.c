@@ -360,6 +360,7 @@ ENEMY* get_available_enemy() {
 	if (enemy_stack_ptr == MAX_ENEMY_NB)  // cycle back
 		enemy_stack_ptr = 0;
 	return enemy;
+}
 
 // Calculate and store x difference and y difference between player and specified unit
 void calculate_diff_with_player(ENEMY* unit) {
