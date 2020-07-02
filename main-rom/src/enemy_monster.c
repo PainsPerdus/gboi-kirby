@@ -55,8 +55,8 @@ void display_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 // Handles absolute enemy movement to specified (x,y) coordinates
 void move_enemy(ENEMY* unit, UINT8 xpos, UINT8 ypos) {
 	// Moves enemy unit to (x,y)
-	move_sprite(unit->sprite_id1, xpos + X_SPRITE_OFFSET + scroll_x, ypos + Y_SPRITE_OFFSET + scroll_y);
-	move_sprite(unit->sprite_id2, xpos + X_SPRITE_OFFSET + 8 + scroll_x, ypos + Y_SPRITE_OFFSET + scroll_y);
+	move_sprite(unit->sprite_id1, xpos + X_ENEMY_SPRITE_OFFSET + scroll_x, ypos + Y_ENEMY_SPRITE_OFFSET + scroll_y);
+	move_sprite(unit->sprite_id2, xpos + X_ENEMY_SPRITE_OFFSET + 8 + scroll_x, ypos + Y_ENEMY_SPRITE_OFFSET + scroll_y);
 	
 	// Store current position and update rectangle, unless it's offscreen
 	if (xpos < X_OFFSCREEN && ypos < Y_OFFSCREEN) {
@@ -383,7 +383,8 @@ void calculate_diff_with_player(ENEMY* unit) {
 
 // Handle all enemy actions
 void handle_enemy(ENEMY* unit) {
-	if (!unit->dying_animation_state) { // Enemy is alive: handle its walk and its attack
+	if (!unit->dying_animation_state) {
+		// Enemy is alive: handle its walk and its attack
         handle_enemy_attack(unit);
 		handle_enemy_walk(unit);
     } else {

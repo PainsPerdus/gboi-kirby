@@ -17,11 +17,9 @@
 #define WALKING_DIRECTION_DOWN 3
 #define WALKING_DIRECTION_IMMOBILE 4
 
-// sprite placement offset
-#ifndef _SPRITE_OFFSET
-#define X_SPRITE_OFFSET 24
-#define Y_SPRITE_OFFSET 16
-#endif
+// enemy sprite placement offset
+#define X_ENEMY_SPRITE_OFFSET 8
+#define Y_ENEMY_SPRITE_OFFSET 16
 
 #define X_OFFSCREEN 240
 #define Y_OFFSCREEN 240
