@@ -10,15 +10,17 @@ date: 2020-07-02 19:00:00 +0200
 It's over. Today marks the last day of our end-of-year project for Télécom
 Paris... and what a day (and, for part of our team, *night*) it was!
 
-Time to ship in and integrate ultimate features (preferrably non-game-breaking
-ones ;] ) for a little demo in front of other people. We can definitely be proud
-of our playable game (albeit somewhat buggy, but pssh...), which came to life in
-less than two weeks!
+Time to ship and integrate the final features (preferably non-game-breaking ones
+:') ) for a little demo in front of students and teachers. We can definitely be proud of
+our playable game (albeit somewhat buggy, but pssh... just don't mind the
+half-pears!), which came to life in less than two weeks!
 
 We made a (final? time will tell...) release, so you can [try it
 out](https://github.com/PainsPerdus/gboi-kirby/releases/tag/1.0) by downloading
 our ROM and running it under a Game Boy emulator (we use
-[SameBoy](https://sameboy.github.io/), but here's a little demo (with sound!):
+[SameBoy](https://sameboy.github.io/)).
+
+Here's a little demo (with sound!):
 
 <video controls height="400" >
   <source src="/gboi-kirby/assets/1.0-demo.mp4" type="video/mp4">
@@ -34,7 +36,7 @@ our ROM and running it under a Game Boy emulator (we use
 * ...but fear not, our dear Piney now has the means to defend himself, because
   his chainsaw [**finally
   works**](https://github.com/PainsPerdus/gboi-kirby/pull/73/files) and does
-  damage to his oppponents!
+  damage to his opponents!
 * [@RoussyE][3]'s sound effects had been lying dormant so far, but now some of
   them are actually used (for dashing, the chainsaw attack, falling in holes,,
   taking damage)!
@@ -69,10 +71,10 @@ but we could not implement projectiles in time to make use of it :'(
 
 ## On sound design
 
->  Thank to the sound features of the Gameboy, every sound is implemented as a single
+>  Thanks to the sound features of the Game Boy, every sound is implemented as a single
 C function. These functions contain inline ASM, assembled and inserted as-is in
 the generated machine code. They modify the sound controller register of the
-Gameboy (addresses FF10 to FF26) and use the sound input 1 (tone and sweep) and
+Game Boy (addresses FF10 to FF26) and use the sound input 1 (tone and sweep) and
 4 (white noise).  Because of the many weird behaviors of the Game Boy, the only
 way to create these sounds was: testing... and testing...  and mind fucking...
 and testing.  So this was pretty horrible but through this, I could create many
@@ -103,13 +105,13 @@ fruit of destruction can learn about close combat with some practice!
 ## Last words... till we meet again!
 
 This project was not easy. We all had to sacrifice something to make it word, be
-it committment to good coding practices, sleep, sanity, or any of the many other
+it commitment to good coding practices, sleep, sanity, or any of the many other
 things we lost along the way; but we also *gained* a great deal, and I'm not
 only talking about our freshly-minted knowledge of the Game Boy hardware
 architecture. I think I speak for the entire Team Kirby when I say that this project
 was exhilarating; it pushed us to our limits, and showed us just how much we
 could achieve, together, with focus and dedication. So to all members of Team
-Kirby, of Team Rocket (our friends and competitors - check our [their
+Kirby, of Team Rocket (our friends and competitors - check out [their
 game][7] if you like low-level stuff, it should satisfy anyone's craving for
 GBZ80 ASM *and* clever hacks), and to our supervising teacher
 [@Aunsiels][8]... so long, and thank you for all the ~~fish~~ glitches :)
