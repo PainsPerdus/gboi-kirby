@@ -13,10 +13,14 @@ bringing us to the deadline. This is the result of our efforts, a game about a
 chainsaw-wielding, mentally troubled pineapple. Some shortcuts had to be taken
 along the way... but hey, it works!
 
-We were asked to keep a journal of our struggles, discoveries, etc, and we put
+We obviously didn't have time to make a _complete_ game, but if you want to
+**try out our demo**, you may [download a
+release](https://github.com/PainsPerdus/gboi-kirby/releases) and run it under an
+original Game Boy emulator such as [SameBoy](https://sameboy.github.io/).
+
+We were asked to keep a **journal** of our struggles, discoveries, etc, and we put
 it online! You can read it [here](https://painsperdus.github.io/gboi-kirby/) if
 game development, GBZ80 assembly and obscure compiler bugs are your thing.
-
 
 Yours truly, the members of _Team Kirby_,
 
