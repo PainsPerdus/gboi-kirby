@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# YES, this is awful, and this point we have no time to care.
-# If someone wants to fix the Makefile, be my guest...
-
+# Note: we are well aware that this build system, if it can even be called that,
+# is hideous, but we had no time to care.
 
 git submodule update --init
 
@@ -14,3 +13,5 @@ make clean
 make assets
 make || true
 make
+
+cp pod.gb ../
