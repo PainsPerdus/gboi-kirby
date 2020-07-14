@@ -4,6 +4,8 @@ _Abandon all hope, ye who enter here..._
 
 ![](demo.gif)
 
+## Some Context
+
 This is an end-of-first-year project, completed in just **two weeks** from start
 to finish by students from the Télécom Paris digital engineering school.
 
@@ -30,3 +32,20 @@ Yours truly, the members of _Team Kirby_,
 - Paul Vezia ([@PaulVez](https://github.com/PaulVez))
 - Tony Law ([@ChatPion](https://github.com/ChatPion))
 - Yohaï-Eliel Berreby ([@yberreby](https://github.com/yberreby/))
+
+## Build Instructions
+
+Requirements:
+
+* [`img2gb`](https://github.com/flozz/img2gb) (can be installed with pip), to
+  convert our assets to the Game Boy tile format.
+* A [Rust](https://www.rust-lang.org/) toolchain (we used rustc v1.44.1) to
+  build our map packing tool.
+* [SDCC](http://sdcc.sourceforge.net/), to build
+  [`gbdk-2020`](https://github.com/Zal0/gbdk-2020).
+
+Our Makefile sets `SDCCDIR=/usr` before building `gbdk-2020`, which works well
+for an sdcc installed with pacman under Arch Linux, for example, but might not
+work in other environments. Feel free to edit it accordingly.
+
+Once everything is set up, run `./build.sh`; the resulting ROM will be in `pod.gb`.
