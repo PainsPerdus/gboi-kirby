@@ -20,9 +20,9 @@ game development, GBZ80 assembly and obscure compiler bugs are your thing.
 
 Yours truly, the members of _Team Kirby_,
 
-- Adame Ben Friha (@AdameBf)
-- Erwann Roussy (@RoussyE)
-- Nolwenn Jouan (@Ametheek)
-- Paul Vezia (@PaulVez)
-- Tony Law (@ChatPion)
-- Yohaï-Eliel Berreby (@yberreby)
+- Adame Ben Friha ([@AdameBf](https://github.com/AdameBf))
+- Erwann Roussy ([@RoussyE](https://github.com/RoussyE))
+- Nolwenn Jouan ([@Ametheek](https://github.com/Ametheek))
+- Paul Vezia ([@PaulVez](https://github.com/PaulVez))
+- Tony Law ([@ChatPion](https://github.com/ChatPion))
+- Yohaï-Eliel Berreby ([@yberreby](https://github.com/yberreby/))
